@@ -7,6 +7,7 @@ use alloc::boxed::Box;
 use cortex_m::prelude::_embedded_hal_timer_CountDown;
 // Linked-List First Fit Heap allocator (feature = "llff")
 use embedded_alloc::LlffHeap as Heap;
+use embedded_hal::digital::InputPin;
 use mousefood::{EmbeddedBackend, EmbeddedBackendConfig};
 use ratatui::Terminal;
 use rp2040_panic_usb_boot as _;
@@ -31,6 +32,8 @@ use usb_device::{
     prelude::{UsbDeviceBuilder, UsbDeviceState, UsbVidPid},
 };
 use usbd_serial::{SerialPort, USB_CLASS_CDC};
+
+mod app;
 
 #[global_allocator]
 static HEAP: Heap = Heap::empty();
@@ -107,6 +110,8 @@ fn main() -> ! {
         &mut pac.RESETS,
     );
 
+    let mut button = pins.gpio2.into_pull_up_input();
+
     usb_log(&mut serial, "before i2c");
     let sda = pins
         .gpio0
@@ -148,25 +153,19 @@ fn main() -> ! {
     };
 
     let backend = EmbeddedBackend::new(&mut display, config);
-    let mut terminal = match Terminal::new(backend) {
-        Ok(t) => t,
-        Err(_) => {
-            usb_log(&mut serial, "terminal new error");
-            loop {
-                delay.start(50.millis());
-                let _ = nb::block!(delay.wait());
-            }
-        }
-    };
+    let mut terminal = Terminal::new(backend).unwrap();
+    let mut app = app::App::new();
 
     loop {
-        if let Err(_) = terminal.draw(|f| {
-            let area = f.area();
-            let block = ratatui::widgets::Block::bordered().title("rat");
-            f.render_widget(block, area);
-        }) {
-            usb_log(&mut serial, "terminal draw error");
-        }
+        let now_ms = timer.get_counter().ticks() / 1000;
+        let button_pressed = button.is_low().unwrap_or(false);
+        app.tick(now_ms, button_pressed);
+
+        terminal
+            .draw(|f| {
+                app.render(f);
+            })
+            .unwrap();
 
         usb_log(&mut serial, "loop");
 
