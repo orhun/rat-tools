@@ -14,6 +14,9 @@ const DOT_DASH_MS: u64 = 200;
 const LETTER_GAP_MS: u64 = 500;
 const WORD_GAP_MS: u64 = 1200;
 
+const DOT_MS: u64 = 60;
+const DASH_MS: u64 = 180;
+
 pub struct App {
     current_symbol: Vec<char>,
     output: Vec<char>,
@@ -21,6 +24,8 @@ pub struct App {
     last_press_ms: u64,
     last_release_ms: u64,
     clear_on_next_letter: bool,
+    buzzer_on: bool,
+    buzzer_until_ms: u64,
 }
 
 impl App {
@@ -32,10 +37,17 @@ impl App {
             last_press_ms: 0,
             last_release_ms: 0,
             clear_on_next_letter: false,
+            buzzer_on: false,
+            buzzer_until_ms: 0,
         }
     }
 
     pub fn tick(&mut self, now_ms: u64, button_pressed: bool) {
+        // Turn the buzzer off when its time is done.
+        if self.buzzer_on && now_ms >= self.buzzer_until_ms {
+            self.buzzer_on = false;
+        }
+
         // Detect transitions.
         if button_pressed && !self.button_down {
             self.button_down = true;
@@ -48,8 +60,10 @@ impl App {
             let press_ms = now_ms.saturating_sub(self.last_press_ms);
             if press_ms < DOT_DASH_MS {
                 self.current_symbol.push('.');
+                self.start_beep(now_ms, DOT_MS);
             } else {
                 self.current_symbol.push('-');
+                self.start_beep(now_ms, DASH_MS);
             }
             self.last_release_ms = now_ms;
             return;
@@ -98,6 +112,15 @@ impl App {
             ),
             f.area(),
         );
+    }
+
+    pub fn buzzer_on(&self) -> bool {
+        self.buzzer_on
+    }
+
+    fn start_beep(&mut self, now_ms: u64, duration_ms: u64) {
+        self.buzzer_on = true;
+        self.buzzer_until_ms = now_ms + duration_ms;
     }
 }
 

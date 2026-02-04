@@ -7,7 +7,7 @@ use alloc::boxed::Box;
 use cortex_m::prelude::_embedded_hal_timer_CountDown;
 // Linked-List First Fit Heap allocator (feature = "llff")
 use embedded_alloc::LlffHeap as Heap;
-use embedded_hal::digital::InputPin;
+use embedded_hal::digital::{InputPin, OutputPin};
 use mousefood::{EmbeddedBackend, EmbeddedBackendConfig};
 use ratatui::Terminal;
 use rp2040_panic_usb_boot as _;
@@ -111,6 +111,7 @@ fn main() -> ! {
     );
 
     let mut button = pins.gpio2.into_pull_up_input();
+    let mut buzzer = pins.gpio6.into_push_pull_output();
 
     usb_log(&mut serial, "before i2c");
     let sda = pins
@@ -160,6 +161,12 @@ fn main() -> ! {
         let now_ms = timer.get_counter().ticks() / 1000;
         let button_pressed = button.is_low().unwrap_or(false);
         app.tick(now_ms, button_pressed);
+
+        if app.buzzer_on() {
+            let _ = buzzer.set_high();
+        } else {
+            let _ = buzzer.set_low();
+        }
 
         terminal
             .draw(|f| {
