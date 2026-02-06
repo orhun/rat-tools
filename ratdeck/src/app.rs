@@ -1,4 +1,4 @@
-use alloc::{format, vec, vec::Vec};
+use alloc::{format, vec};
 use embedded_graphics::{
     image::Image,
     pixelcolor::Rgb565,
@@ -6,7 +6,7 @@ use embedded_graphics::{
     Drawable,
 };
 use ratatui::{
-    layout::{Alignment, Margin, Rect},
+    layout::{Alignment, Constraint, Margin, Rect},
     style::{Style, Stylize},
     text::{Line, Text},
     widgets::{Block, BorderType, Paragraph, Wrap},
@@ -42,8 +42,7 @@ impl App {
     }
 
     pub fn handle_button_press(&mut self) {
-        let total = SLIDES.len() + 2;
-        self.current_slide = (self.current_slide + 1) % total;
+        self.current_slide = (self.current_slide + 1) % SLIDES.len();
         self.effect = Self::get_effect();
     }
 
@@ -52,19 +51,21 @@ impl App {
         D: DrawTarget<Color = Rgb565>,
         D::Error: core::fmt::Debug,
     {
-        if self.current_slide == 1 {
+        let Some(slide) = SLIDES.get(self.current_slide) else {
+            return;
+        };
+
+        let title = match slide {
+            Slide::Title(TitleSlide { title }) => Some(*title),
+            Slide::Text(TextSlide { title, .. }) => Some(*title),
+            Slide::Image(ImageSlide { title, .. }) => Some(*title),
+        };
+
+        if title == Some("<intro2>") {
             let im = Image::new(&crate::assets::RAT_CHEF, Point::new(0, 10));
             im.draw(display).unwrap();
             return;
         }
-        if self.current_slide < 2 {
-            return;
-        };
-
-        let slide_index = self.current_slide - 2;
-        let Some(slide) = SLIDES.get(slide_index) else {
-            return;
-        };
 
         let image_name = match slide {
             Slide::Image(ImageSlide { image, .. }) => Some(*image),
@@ -83,20 +84,28 @@ impl App {
     }
 
     pub fn render(&mut self, f: &mut Frame) {
-        if self.current_slide == 0 {
+        let Some(slide) = SLIDES.get(self.current_slide) else {
+            return;
+        };
+
+        let title = match slide {
+            Slide::Title(TitleSlide { title }) => Some(*title),
+            Slide::Text(TextSlide { title, .. }) => Some(*title),
+            Slide::Image(ImageSlide { title, .. }) => Some(*title),
+        };
+
+        if title == Some("<intro1>") {
             self.intro_slide1(f);
-        } else if self.current_slide == 1 {
+            return;
+        } else if title == Some("<intro2>") {
             self.intro_slide2(f);
-        } else {
-            let slide_index = self.current_slide - 2;
-            let Some(slide) = SLIDES.get(slide_index) else {
-                return;
-            };
-            match slide {
-                Slide::Title(data) => self.slide_with_title(f, data),
-                Slide::Text(data) => self.slide_with_text(f, data),
-                Slide::Image(data) => self.slide_with_image(f, data),
-            }
+            return;
+        }
+
+        match slide {
+            Slide::Title(data) => self.slide_with_title(f, data),
+            Slide::Text(data) => self.slide_with_text(f, data),
+            Slide::Image(data) => self.slide_with_image(f, data),
         }
 
         if !self.effect.done() {
@@ -105,29 +114,29 @@ impl App {
     }
 
     fn slide_with_title(&mut self, f: &mut Frame, slide: &TitleSlide) {
-        let lines = vec![Line::default()];
+        self.chart_app.on_tick();
+        self.chart_app.draw(f);
 
-        f.render_widget(
-            Paragraph::new(Text::from(lines))
-                .block(
-                    Block::bordered()
-                        .title(slide.title.white())
-                        .border_type(BorderType::Rounded),
-                )
-                .wrap(Wrap { trim: false }),
-            f.area().inner(Margin {
-                horizontal: 1,
-                vertical: 1,
-            }),
-        );
+        let text = Text::from(vec![Line::styled(
+            slide.title,
+            Style::new().black().on_white(),
+        )]);
+
+        let area = f
+            .area()
+            .centered(Constraint::Percentage(80), Constraint::Percentage(20));
+
+        f.render_widget(Paragraph::new(text).wrap(Wrap { trim: false }), area);
     }
 
     fn slide_with_text(&mut self, f: &mut Frame, slide: &TextSlide) {
+        let mut text = slide.text.clone();
+        text.lines.insert(0, Line::default());
         f.render_widget(
-            Paragraph::new(Text::from(slide.text.clone()))
+            Paragraph::new(text)
                 .block(
                     Block::bordered()
-                        .title(slide.title.white())
+                        .title(format!("┤ {} ├", slide.title).white())
                         .border_type(BorderType::Rounded),
                 )
                 .wrap(Wrap { trim: false }),
@@ -139,11 +148,13 @@ impl App {
     }
 
     fn slide_with_image(&mut self, f: &mut Frame, slide: &ImageSlide) {
+        let mut text = slide.text.clone();
+        text.lines.insert(0, Line::default());
         f.render_widget(
-            Paragraph::new(slide.text.clone())
+            Paragraph::new(text)
                 .block(
                     Block::bordered()
-                        .title(slide.title.white())
+                        .title(format!("┤ {} ├", slide.title).white())
                         .border_type(BorderType::Rounded),
                 )
                 .wrap(Wrap { trim: false }),
@@ -176,7 +187,7 @@ impl App {
             ]))
             .block(
                 Block::bordered()
-                    .title("| who u? |".white())
+                    .title("┤ rat bio ├".white())
                     .border_type(BorderType::Rounded)
                     .border_style(Style::new().white())
                     .title_bottom("orhun.dev")
@@ -196,8 +207,6 @@ impl App {
     }
 
     fn intro_slide1(&mut self, f: &mut Frame) {
-        // self.chart_app.on_tick();
-        // self.chart_app.draw(f);
         let first_line = BigText::builder()
             .pixel_size(PixelSize::Quadrant)
             .style(Style::new().green())

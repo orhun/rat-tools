@@ -141,10 +141,7 @@ fn build_slides(out_dir: &Path) -> io::Result<()> {
     writeln!(out_file, "use alloc::vec::Vec;")?;
     writeln!(out_file, "use core::ops::Deref;")?;
     writeln!(out_file, "use once_cell::race::OnceBox;")?;
-    writeln!(
-        out_file,
-        "use ratatui::style::{{Color, Modifier, Style, Stylize}};"
-    )?;
+    writeln!(out_file, "use ratatui::style::{{Color, Stylize}};")?;
     writeln!(out_file, "use ratatui::text::{{Line, Span}};")?;
     writeln!(out_file)?;
     writeln!(out_file, "pub static SLIDES: Slides = Slides;")?;

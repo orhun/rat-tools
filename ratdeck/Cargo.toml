@@ -2,6 +2,7 @@
 edition = "2021"
 name = "ratdeck"
 version = "0.1.0"
+default-run = "ratdeck"
 
 [dependencies]
 cortex-m = "0.7"
@@ -26,6 +27,15 @@ ratatui = { version = "0.30", default-features = false, features = ["portable-at
 tui-big-text = "0.8.2"
 libm = "0.2.16"
 tachyonfx = { version = "0.23.0", default-features = false }
+embedded-graphics-simulator = { version = "0.8.0", optional = true }
+
+[features]
+simulator = ["embedded-graphics-simulator"]
+
+[[bin]]
+name = "simulator"
+path = "src/bin/simulator.rs"
+required-features = ["simulator"]
 
 # cargo build/run
 [profile.dev]

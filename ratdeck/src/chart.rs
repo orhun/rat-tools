@@ -1,6 +1,5 @@
 use alloc::vec::Vec;
 
-use alloc::format;
 use alloc::vec;
 use libm::sin;
 use ratatui::prelude::*;
@@ -70,17 +69,6 @@ impl ChartApp {
     }
 
     pub fn draw(&mut self, frame: &mut Frame) {
-        let x_labels = vec![
-            Span::styled(
-                format!("{}", self.window[0]),
-                Style::default().add_modifier(Modifier::BOLD),
-            ),
-            Span::raw(format!("{}", (self.window[0] + self.window[1]) / 2.0)),
-            Span::styled(
-                format!("{}", self.window[1]),
-                Style::default().add_modifier(Modifier::BOLD),
-            ),
-        ];
         let datasets = vec![
             Dataset::default()
                 .marker(symbols::Marker::Dot)
@@ -95,14 +83,12 @@ impl ChartApp {
         let chart = Chart::new(datasets)
             .x_axis(
                 Axis::default()
-                    .style(Style::default().fg(Color::Gray))
-                    .labels(x_labels)
+                    .style(Style::default().fg(Color::Black))
                     .bounds(self.window),
             )
             .y_axis(
                 Axis::default()
-                    .style(Style::default().fg(Color::Gray))
-                    .labels(["-20".bold(), "0".into(), "20".bold()])
+                    .style(Style::default().fg(Color::Black))
                     .bounds([-20.0, 20.0]),
             );
 

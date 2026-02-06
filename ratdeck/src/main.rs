@@ -38,12 +38,7 @@ use usb_device::{
 };
 use usbd_serial::{SerialPort, USB_CLASS_CDC};
 
-use crate::app::App;
-
-mod app;
-pub mod assets;
-mod chart;
-mod slides;
+use ratdeck::app::App;
 
 #[global_allocator]
 static HEAP: Heap = Heap::empty();
