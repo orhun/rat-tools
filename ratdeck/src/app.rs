@@ -42,7 +42,28 @@ impl App {
     }
 
     pub fn handle_button_press(&mut self) {
-        self.current_slide = (self.current_slide + 1) % SLIDES.len();
+        self.next_slide();
+    }
+
+    pub fn next_slide(&mut self) {
+        let len = SLIDES.len();
+        if len == 0 {
+            return;
+        }
+        self.current_slide = (self.current_slide + 1) % len;
+        self.effect = Self::get_effect();
+    }
+
+    pub fn prev_slide(&mut self) {
+        let len = SLIDES.len();
+        if len == 0 {
+            return;
+        }
+        if self.current_slide == 0 {
+            self.current_slide = len - 1;
+        } else {
+            self.current_slide -= 1;
+        }
         self.effect = Self::get_effect();
     }
 

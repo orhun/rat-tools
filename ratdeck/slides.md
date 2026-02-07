@@ -36,7 +36,7 @@ And we learned to do a lot with very little.
 
 # Then...
 
-![image:left](rat-cup.png)
+![image:left](gemini.png)
 
 They changed.
 
@@ -45,6 +45,18 @@ Like everything else.
 They evolved.
 
 Because we always wanted more.
+
+---
+
+# But...
+
+---
+
+# suzui-rs
+
+_github.com/thatdevsherry/suzui-rs_
+
+Suzuki Serial Data Line (SDL) viewer in Rust.
 
 ---
 

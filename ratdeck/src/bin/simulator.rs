@@ -1,6 +1,7 @@
 use embedded_graphics_simulator::{
     OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window,
 };
+use embedded_graphics_simulator::sdl2::Keycode;
 use mousefood::embedded_graphics::geometry;
 use mousefood::embedded_graphics::pixelcolor::Rgb565;
 use mousefood::error::Error;
@@ -47,7 +48,11 @@ fn main() -> Result<(), Error> {
         for event in window.events() {
             match event {
                 SimulatorEvent::Quit => return Ok(()),
-                SimulatorEvent::KeyDown { .. } => app.handle_button_press(),
+                SimulatorEvent::KeyDown { keycode, .. } => match keycode {
+                    Keycode::Right | Keycode::Down => app.next_slide(),
+                    Keycode::Left | Keycode::Up => app.prev_slide(),
+                    _ => {}
+                },
                 _ => {}
             }
         }
