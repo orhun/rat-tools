@@ -16,13 +16,15 @@ use tachyonfx::{fx, Duration as FxDuration, Effect, EffectRenderer};
 use tui_big_text::{BigText, PixelSize};
 
 use crate::{
-    bg::{aurora, waves},
+    bg::{aurora, hyper, nebula, waves},
     slides::{Background, ImagePosition, ImageSlide, Slide, TextSlide, TitleSlide, SLIDES},
 };
 
 pub struct App {
     waves_app: waves::WavesApp,
     aurora_app: aurora::AuroraApp,
+    nebula_app: nebula::NebulaApp,
+    hyper_app: hyper::HyperApp,
     current_slide: usize,
     effect: Effect,
 }
@@ -32,6 +34,8 @@ impl App {
         Self {
             waves_app: waves::WavesApp::new(),
             aurora_app: aurora::AuroraApp::new(),
+            nebula_app: nebula::NebulaApp::new(),
+            hyper_app: hyper::HyperApp::new(),
             current_slide: 0,
             effect: Self::get_effect(),
         }
@@ -158,6 +162,14 @@ impl App {
             Background::Aurora => {
                 self.aurora_app.on_tick();
                 self.aurora_app.draw(f);
+            }
+            Background::Nebula => {
+                self.nebula_app.on_tick();
+                self.nebula_app.draw(f);
+            }
+            Background::Hyper => {
+                self.hyper_app.on_tick();
+                self.hyper_app.draw(f);
             }
         }
 

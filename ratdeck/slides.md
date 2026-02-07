@@ -1,6 +1,6 @@
 # Wake up... The terminal has you. Follow the white rat.
 
-<!-- background: waves -->
+<!-- background: nebula -->
 
 ---
 
@@ -165,7 +165,7 @@ This is not even our final form.
 
 # A terminal renaissance???????? This rat library keeps popping up everywhere!
 
-<!-- background: aurora -->
+<!-- background: waves -->
 
 ---
 

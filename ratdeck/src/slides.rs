@@ -40,6 +40,8 @@ pub enum ImagePosition {
 pub enum Background {
     Waves,
     Aurora,
+    Nebula,
+    Hyper,
 }
 
 include!(concat!(env!("OUT_DIR"), "/slides.rs"));

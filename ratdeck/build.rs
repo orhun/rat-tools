@@ -235,6 +235,8 @@ impl SlideDef {
 enum Background {
     Waves,
     Aurora,
+    Nebula,
+    Hyper,
 }
 
 impl Background {
@@ -242,6 +244,8 @@ impl Background {
         match self {
             Self::Waves => "Background::Waves",
             Self::Aurora => "Background::Aurora",
+            Self::Nebula => "Background::Nebula",
+            Self::Hyper => "Background::Hyper",
         }
     }
 }
@@ -379,6 +383,8 @@ fn parse_background_line(line: &str) -> Result<Option<Background>, String> {
     match value.as_str() {
         "waves" => Ok(Some(Background::Waves)),
         "aurora" => Ok(Some(Background::Aurora)),
+        "nebula" => Ok(Some(Background::Nebula)),
+        "hyper" => Ok(Some(Background::Hyper)),
         other => Err(format!("unsupported background: {other}")),
     }
 }
