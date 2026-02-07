@@ -1,5 +1,7 @@
 # Wake up... The terminal has you. Follow the white rat.
 
+<!-- background: waves -->
+
 ---
 
 # The rat in the room
@@ -163,6 +165,8 @@ This is not even our final form.
 
 # A terminal renaissance???????? This rat library keeps popping up everywhere!
 
+<!-- background: aurora -->
+
 ---
 
 # suzui-rs
@@ -180,6 +184,8 @@ Suzuki Serial Data Line (SDL) viewer in Rust.
 ---
 
 # From servers to toasters?
+
+<!-- background: aurora -->
 
 ---
 

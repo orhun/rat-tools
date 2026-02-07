@@ -5,7 +5,7 @@ use libm::sin;
 use ratatui::prelude::*;
 use ratatui::widgets::{Axis, Chart, Dataset};
 
-pub struct ChartApp {
+pub struct WavesApp {
     signal1: SinSignal,
     data1: Vec<(f64, f64)>,
     signal2: SinSignal,
@@ -41,7 +41,7 @@ impl Iterator for SinSignal {
     }
 }
 
-impl ChartApp {
+impl WavesApp {
     pub fn new() -> Self {
         let mut signal1 = SinSignal::new(0.2, 3.0, 18.0);
         let mut signal2 = SinSignal::new(0.1, 2.0, 10.0);

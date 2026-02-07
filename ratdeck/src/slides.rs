@@ -10,6 +10,7 @@ pub enum Slide {
 #[derive(Debug)]
 pub struct TitleSlide {
     pub title: &'static str,
+    pub background: Background,
 }
 
 #[derive(Debug)]
@@ -33,6 +34,12 @@ pub enum ImagePosition {
     Left,
     Center,
     Right,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Background {
+    Waves,
+    Aurora,
 }
 
 include!(concat!(env!("OUT_DIR"), "/slides.rs"));

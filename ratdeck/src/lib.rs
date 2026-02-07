@@ -4,5 +4,5 @@ extern crate alloc;
 
 pub mod app;
 pub mod assets;
-mod chart;
+pub mod bg;
 pub mod slides;

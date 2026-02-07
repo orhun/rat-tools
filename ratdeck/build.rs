@@ -182,6 +182,7 @@ fn build_slides(out_dir: &Path) -> io::Result<Vec<SlideDef>> {
 enum SlideDef {
     Title {
         title: String,
+        background: Background,
     },
     Text {
         title: String,
@@ -200,9 +201,10 @@ enum SlideDef {
 impl SlideDef {
     fn to_rust(&self) -> String {
         match self {
-            SlideDef::Title { title } => format!(
-                "Slide::Title(TitleSlide {{ title: {} }})",
-                rust_string(title)
+            SlideDef::Title { title, background } => format!(
+                "Slide::Title(TitleSlide {{ title: {}, background: {} }})",
+                rust_string(title),
+                background.to_rust()
             ),
             SlideDef::Text { title, markdown } => format!(
                 "Slide::Text(TextSlide {{ title: {}, text: {} }})",
@@ -225,6 +227,21 @@ impl SlideDef {
                 height,
                 markdown_to_rust(markdown)
             ),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Background {
+    Waves,
+    Aurora,
+}
+
+impl Background {
+    fn to_rust(self) -> &'static str {
+        match self {
+            Self::Waves => "Background::Waves",
+            Self::Aurora => "Background::Aurora",
         }
     }
 }
@@ -292,6 +309,7 @@ fn parse_slide(lines: &[&str]) -> Result<SlideDef, String> {
         .to_string();
 
     let body = &lines[idx..];
+    let (background, body) = extract_background(body)?;
     let markdown = body.join("\n");
 
     let mut first_non_empty = None;
@@ -303,7 +321,7 @@ fn parse_slide(lines: &[&str]) -> Result<SlideDef, String> {
     }
 
     let Some((first_idx, first_line)) = first_non_empty else {
-        return Ok(SlideDef::Title { title });
+        return Ok(SlideDef::Title { title, background });
     };
 
     if let Some((alt, image)) = parse_image_syntax(first_line.trim())? {
@@ -324,6 +342,45 @@ fn parse_slide(lines: &[&str]) -> Result<SlideDef, String> {
     }
 
     Ok(SlideDef::Text { title, markdown })
+}
+
+fn extract_background<'a>(lines: &[&'a str]) -> Result<(Background, Vec<&'a str>), String> {
+    let mut background = None;
+    let mut out = Vec::with_capacity(lines.len());
+    for line in lines {
+        match parse_background_line(line)? {
+            Some(found) => {
+                if background.replace(found).is_some() {
+                    return Err("multiple background directives in a single slide".to_string());
+                }
+            }
+            None => out.push(*line),
+        }
+    }
+    Ok((background.unwrap_or(Background::Waves), out))
+}
+
+fn parse_background_line(line: &str) -> Result<Option<Background>, String> {
+    let trimmed = line.trim();
+    if !trimmed.starts_with("<!--") || !trimmed.ends_with("-->") {
+        return Ok(None);
+    }
+    let inner = trimmed
+        .trim_start_matches("<!--")
+        .trim_end_matches("-->")
+        .trim();
+    let inner = inner
+        .strip_prefix("background:")
+        .or_else(|| inner.strip_prefix("background: ")); // tolerate space
+    let Some(value) = inner else {
+        return Ok(None);
+    };
+    let value = value.trim().to_ascii_lowercase();
+    match value.as_str() {
+        "waves" => Ok(Some(Background::Waves)),
+        "aurora" => Ok(Some(Background::Aurora)),
+        other => Err(format!("unsupported background: {other}")),
+    }
 }
 
 fn parse_image_syntax(line: &str) -> Result<Option<(String, String)>, String> {

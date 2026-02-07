@@ -16,12 +16,13 @@ use tachyonfx::{fx, Duration as FxDuration, Effect, EffectRenderer};
 use tui_big_text::{BigText, PixelSize};
 
 use crate::{
-    chart,
-    slides::{ImagePosition, ImageSlide, Slide, TextSlide, TitleSlide, SLIDES},
+    bg::{aurora, waves},
+    slides::{Background, ImagePosition, ImageSlide, Slide, TextSlide, TitleSlide, SLIDES},
 };
 
 pub struct App {
-    chart_app: chart::ChartApp,
+    waves_app: waves::WavesApp,
+    aurora_app: aurora::AuroraApp,
     current_slide: usize,
     effect: Effect,
 }
@@ -29,7 +30,8 @@ pub struct App {
 impl App {
     pub fn new() -> Self {
         Self {
-            chart_app: chart::ChartApp::new(),
+            waves_app: waves::WavesApp::new(),
+            aurora_app: aurora::AuroraApp::new(),
             current_slide: 0,
             effect: Self::get_effect(),
         }
@@ -77,7 +79,7 @@ impl App {
         };
 
         let title = match slide {
-            Slide::Title(TitleSlide { title }) => Some(*title),
+            Slide::Title(TitleSlide { title, .. }) => Some(*title),
             Slide::Text(TextSlide { title, .. }) => Some(*title),
             Slide::Image(ImageSlide { title, .. }) => Some(*title),
         };
@@ -123,7 +125,7 @@ impl App {
         };
 
         let title = match slide {
-            Slide::Title(TitleSlide { title }) => Some(*title),
+            Slide::Title(TitleSlide { title, .. }) => Some(*title),
             Slide::Text(TextSlide { title, .. }) => Some(*title),
             Slide::Image(ImageSlide { title, .. }) => Some(*title),
         };
@@ -148,8 +150,16 @@ impl App {
     }
 
     fn slide_with_title(&mut self, f: &mut Frame, slide: &TitleSlide) {
-        self.chart_app.on_tick();
-        self.chart_app.draw(f);
+        match slide.background {
+            Background::Waves => {
+                self.waves_app.on_tick();
+                self.waves_app.draw(f);
+            }
+            Background::Aurora => {
+                self.aurora_app.on_tick();
+                self.aurora_app.draw(f);
+            }
+        }
 
         let text = Text::from(vec![Line::styled(
             slide.title,
