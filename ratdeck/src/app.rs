@@ -2,7 +2,7 @@ use alloc::{format, vec};
 use embedded_graphics::{
     image::Image,
     pixelcolor::Rgb565,
-    prelude::{DrawTarget, Point},
+    prelude::{DrawTarget, OriginDimensions, Point},
     Drawable,
 };
 use ratatui::{
@@ -69,7 +69,7 @@ impl App {
 
     pub fn render_image<D>(&mut self, display: &mut D)
     where
-        D: DrawTarget<Color = Rgb565>,
+        D: DrawTarget<Color = Rgb565> + OriginDimensions,
         D::Error: core::fmt::Debug,
     {
         let Some(slide) = SLIDES.get(self.current_slide) else {
@@ -88,19 +88,32 @@ impl App {
             return;
         }
 
-        let image_name = match slide {
-            Slide::Image(ImageSlide { image, .. }) => Some(*image),
-            _ => None,
+        let (image_name, image_width, image_height, position) = match slide {
+            Slide::Image(ImageSlide {
+                image,
+                width,
+                height,
+                position,
+                ..
+            }) => (image, *width, *height, position),
+            _ => return,
         };
 
-        let Some(image_name) = image_name else {
-            return;
-        };
         let Some(image) = crate::assets::resolve_image(image_name) else {
             return;
         };
 
-        let im = Image::new(image, Point::new(0, 0));
+        let display_size = display.size();
+        let point = if *position == ImagePosition::Center {
+            Point::new(
+                (display_size.width.saturating_sub(image_width) / 2) as i32,
+                (display_size.height.saturating_sub(image_height) / 2) as i32,
+            )
+        } else {
+            Point::new(0, 0)
+        };
+
+        let im = Image::new(image, point);
         im.draw(display).unwrap();
     }
 

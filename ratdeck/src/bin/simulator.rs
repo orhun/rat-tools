@@ -1,7 +1,7 @@
+use embedded_graphics_simulator::sdl2::Keycode;
 use embedded_graphics_simulator::{
     OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window,
 };
-use embedded_graphics_simulator::sdl2::Keycode;
 use mousefood::embedded_graphics::geometry;
 use mousefood::embedded_graphics::pixelcolor::Rgb565;
 use mousefood::error::Error;

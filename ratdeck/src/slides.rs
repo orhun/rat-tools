@@ -23,6 +23,8 @@ pub struct ImageSlide {
     pub title: &'static str,
     pub image: &'static str,
     pub position: ImagePosition,
+    pub width: u32,
+    pub height: u32,
     pub text: &'static Text<'static>,
 }
 

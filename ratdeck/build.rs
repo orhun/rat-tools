@@ -191,6 +191,8 @@ enum SlideDef {
         title: String,
         image: String,
         position: ImagePosition,
+        width: u32,
+        height: u32,
         markdown: String,
     },
 }
@@ -211,12 +213,16 @@ impl SlideDef {
                 title,
                 image,
                 position,
+                width,
+                height,
                 markdown,
             } => format!(
-                "Slide::Image(ImageSlide {{ title: {}, image: {}, position: {}, text: {} }})",
+                "Slide::Image(ImageSlide {{ title: {}, image: {}, position: {}, width: {}, height: {}, text: {} }})",
                 rust_string(title),
                 rust_string(image),
                 position.to_rust(),
+                width,
+                height,
                 markdown_to_rust(markdown)
             ),
         }
@@ -303,11 +309,16 @@ fn parse_slide(lines: &[&str]) -> Result<SlideDef, String> {
     if let Some((alt, image)) = parse_image_syntax(first_line.trim())? {
         validate_image_path(&image)?;
         let position = ImagePosition::from_alt(&alt)?;
+        let image_path = Path::new("assets").join(&image);
+        let (width, height) =
+            target_dimensions(position, &image_path).map_err(|err| err.to_string())?;
         let markdown = body[first_idx + 1..].join("\n");
         return Ok(SlideDef::Image {
             title,
             image,
             position,
+            width,
+            height,
             markdown,
         });
     }
@@ -382,15 +393,27 @@ fn target_dimensions(position: ImagePosition, png_path: &Path) -> io::Result<(u3
     match position {
         ImagePosition::Center => {
             let (src_w, src_h) = source_dimensions(png_path)?;
-            if src_h == 0 {
+            if src_w == 0 || src_h == 0 {
                 return Err(io::Error::new(
                     io::ErrorKind::Other,
-                    format!("invalid image height for {}", png_path.display()),
+                    format!("invalid image dimensions for {}", png_path.display()),
                 ));
             }
-            let height = 240;
-            let width = ((src_w as u64 * height as u64) + (src_h as u64 / 2)) / src_h as u64;
-            Ok((width as u32, height))
+            let max_w = 320u64;
+            let max_h = 240u64;
+            let src_w = src_w as u64;
+            let src_h = src_h as u64;
+
+            let (width, height) = if max_w * src_h <= max_h * src_w {
+                let width = max_w;
+                let height = (src_h * max_w + (src_w / 2)) / src_w;
+                (width, height)
+            } else {
+                let height = max_h;
+                let width = (src_w * max_h + (src_h / 2)) / src_h;
+                (width, height)
+            };
+            Ok((width as u32, height as u32))
         }
         ImagePosition::Left | ImagePosition::Right => Ok((160, 214)),
     }
