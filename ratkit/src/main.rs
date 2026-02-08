@@ -5,7 +5,7 @@ extern crate alloc;
 
 use alloc::boxed::Box;
 use core::cell::RefCell;
-use cortex_m::prelude::_embedded_hal_adc_OneShot;
+use cortex_m::prelude::_embedded_hal_timer_CountDown;
 // Linked-List First Fit Heap allocator (feature = "llff")
 use embedded_alloc::LlffHeap as Heap;
 use embedded_hal::digital::{InputPin, OutputPin};
@@ -18,9 +18,9 @@ use mpu6050::Mpu6050;
 use ratatui::Terminal;
 use rp2040_panic_usb_boot as _;
 
+use fugit::ExtU32;
 use fugit::RateExtU32;
 use rp2040_hal::{
-    adc::{Adc, AdcPin},
     clocks::{init_clocks_and_plls, Clock},
     entry,
     gpio::{FunctionI2C, Pins},
@@ -159,6 +159,7 @@ fn main() -> ! {
     .unwrap();
 
     let timer = Timer::new(pac.TIMER, &mut pac.RESETS, &clocks);
+    let mut delay = timer.count_down();
 
     let usb_bus = UsbBusAllocator::new(UsbBus::new(
         pac.USBCTRL_REGS,
@@ -254,11 +255,7 @@ fn main() -> ! {
         let button_pressed = button.is_low().unwrap_or(false);
         let menu_pressed = menu_button.is_low().unwrap_or(false);
         let accel = mpu.get_acc().ok().map(|a| (a.x, a.y, a.z));
-        let adc_sample: u16 = match adc.read(&mut adc_pin) {
-            Ok(v) => v,
-            Err(_) => 0,
-        };
-        app.tick(now_ms, button_pressed, menu_pressed, accel, adc_sample);
+        app.tick(now_ms, button_pressed, menu_pressed, accel);
 
         if app.buzzer_on() {
             let _ = buzzer.set_high();
@@ -273,5 +270,8 @@ fn main() -> ! {
             .unwrap();
 
         usb_log(&mut serial, "loop");
+
+        delay.start(50.millis());
+        let _ = nb::block!(delay.wait());
     }
 }

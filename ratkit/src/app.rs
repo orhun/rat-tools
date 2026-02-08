@@ -2,15 +2,13 @@ extern crate alloc;
 
 use alloc::format;
 use alloc::string::String;
-use alloc::vec;
 use alloc::vec::Vec;
 
 use ratatui::text::Line;
 use ratatui::{
     layout::Alignment,
     style::{Color, Style, Stylize},
-    symbols::Marker,
-    widgets::{Axis, Block, BorderType, Chart, Dataset, GraphType, Paragraph},
+    widgets::{Block, BorderType, Paragraph},
 };
 
 const DOT_DASH_MS: u64 = 200;
@@ -21,14 +19,11 @@ const DOT_MS: u64 = 60;
 const DASH_MS: u64 = 180;
 const STEP_THRESHOLD_SQ: f32 = 1.3 * 1.3;
 const STEP_DEBOUNCE_MS: u64 = 300;
-const SAMPLE_INTERVAL_MS: u64 = 8;
-const MAX_SAMPLES: usize = 96;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Mode {
     Morse,
     Imu,
-    Mic,
 }
 
 pub struct App {
@@ -47,8 +42,6 @@ pub struct App {
     az: f32,
     steps: u32,
     last_peak_ms: u64,
-    samples: Vec<u16>,
-    last_sample_ms: u64,
 }
 
 impl App {
@@ -69,8 +62,6 @@ impl App {
             az: 0.0,
             steps: 0,
             last_peak_ms: 0,
-            samples: Vec::new(),
-            last_sample_ms: 0,
         }
     }
 
@@ -80,7 +71,6 @@ impl App {
         button_pressed: bool,
         menu_pressed: bool,
         accel: Option<(f32, f32, f32)>,
-        adc_sample: u16,
     ) {
         if menu_pressed && !self.menu_button_down {
             self.menu_button_down = true;
@@ -96,14 +86,6 @@ impl App {
             if self.mode == Mode::Imu {
                 self.update_steps(now_ms);
             }
-        }
-
-        if now_ms.saturating_sub(self.last_sample_ms) >= SAMPLE_INTERVAL_MS {
-            self.samples.push(adc_sample);
-            if self.samples.len() > MAX_SAMPLES {
-                self.samples.remove(0);
-            }
-            self.last_sample_ms = now_ms;
         }
 
         if self.mode != Mode::Morse {
@@ -165,10 +147,10 @@ impl App {
         match self.mode {
             Mode::Morse => {
                 let mut lines = Vec::new();
-                lines.push(
-                    Line::styled("Hold for dot / dash", Style::default().fg(Color::Yellow))
-                        .alignment(Alignment::Center),
-                );
+                lines.push(Line::styled(
+                    "Hold for dot / dash",
+                    Style::default().fg(Color::Yellow),
+                ).alignment(Alignment::Center));
                 lines.push(Line::styled(
                     self.current_symbol.iter().collect::<String>(),
                     Style::default().fg(Color::Cyan),
@@ -214,40 +196,6 @@ impl App {
                     f.area(),
                 );
             }
-            Mode::Mic => {
-                let mut points: Vec<(f64, f64)> = Vec::with_capacity(self.samples.len());
-                let start = self.samples.len().saturating_sub(MAX_SAMPLES);
-                for (idx, sample) in self.samples.iter().skip(start).enumerate() {
-                    points.push((idx as f64, *sample as f64));
-                }
-
-                let dataset = Dataset::default()
-                    .marker(Marker::Braille)
-                    .graph_type(GraphType::Line)
-                    .style(Style::default().fg(Color::Cyan))
-                    .data(&points);
-
-                let chart = Chart::new(vec![dataset])
-                    .x_axis(
-                        Axis::default()
-                            .style(Style::default().fg(Color::Black))
-                            .bounds([0.0, MAX_SAMPLES as f64]),
-                    )
-                    .y_axis(
-                        Axis::default()
-                            .style(Style::default().fg(Color::Black))
-                            .bounds([0.0, 4095.0]),
-                    )
-                    .block(
-                        Block::bordered()
-                            .border_style(Style::default().fg(Color::Yellow))
-                            .border_type(BorderType::Rounded)
-                            .title("┤ Rat Mic ├".white())
-                            .title_alignment(Alignment::Center),
-                    );
-
-                f.render_widget(chart, f.area());
-            }
         }
     }
 
@@ -261,10 +209,10 @@ impl App {
     }
 
     fn toggle_mode(&mut self) {
-        self.mode = match self.mode {
-            Mode::Morse => Mode::Imu,
-            Mode::Imu => Mode::Mic,
-            Mode::Mic => Mode::Morse,
+        self.mode = if self.mode == Mode::Morse {
+            Mode::Imu
+        } else {
+            Mode::Morse
         };
         self.buzzer_on = false;
     }
