@@ -6,7 +6,7 @@ version = "0.1.0"
 [dependencies]
 cortex-m = "0.7"
 cortex-m-rt = "0.7"
-embedded-hal = "1.0.0"
+embedded-hal = { version = "1.0.0" }
 
 rp2040-hal = { version = "0.10", features = ["rt", "critical-section-impl"] }
 rp2040-boot2 = "0.3"
