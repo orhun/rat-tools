@@ -109,16 +109,16 @@ fn main() -> ! {
 
     usb_log(&mut serial, "before i2c");
     let sda = pins
-        .gpio0
+        .gpio14
         .into_pull_up_input()
         .into_function::<FunctionI2C>();
     let scl = pins
-        .gpio1
+        .gpio15
         .into_pull_up_input()
         .into_function::<FunctionI2C>();
 
-    let i2c = I2C::i2c0(
-        pac.I2C0,
+    let i2c = I2C::i2c1(
+        pac.I2C1,
         sda,
         scl,
         400.kHz(),

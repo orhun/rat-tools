@@ -80,10 +80,22 @@ And it's a new kind of problem.
 
 It isn't just about Codex.
 
-There is a pattern.
+> There is a pattern.
 
 A lot of modern terminal software
 is built with Rust and Ratatui.
+
+---
+
+# https://www.reddit.com/r/commandline/comments/1qyq204/why_do_so_many_tui_projects_seem_to_use_rust_as/
+
+![image:center](r-commandline.png)
+
+---
+
+# https://www.reddit.com/r/commandline/comments/1qyq204/why_do_so_many_tui_projects_seem_to_use_rust_as/
+
+![image:center](r-commandline-2.png)
 
 ---
 
@@ -107,23 +119,17 @@ Used by Netflix, AWS, Oxide & more!
 
 ---
 
-# ATAC
+# Vortix
 
-![image:center](atac.png)
+Terminal UI for WireGuard and OpenVPN with real-time telemetry and leak guarding.
 
----
-
-# ATAC
-
-Postman-like API client for the terminal.
-
-> github.com/Julien-cpsn/ATAC
+> github.com/Harry-kp/vortix
 
 ---
 
-# Crabsid
+# Vortix
 
-![image:center](crabsid.png)
+![image:center](vortix.png)
 
 ---
 
@@ -135,9 +141,23 @@ A TUI music player for Commodore 64 SID tunes
 
 ---
 
-# Minesweeper 4D
+# Crabsid
 
-![image:center](minesweeper-4d.png)
+![image:center](crabsid.png)
+
+---
+
+# Dealve
+
+Find the best game deals across Steam, Epic Games & more.
+
+> github.com/kurama/dealve-tui
+
+---
+
+# Dealve
+
+![image:center](dealve.png)
 
 ---
 
@@ -149,13 +169,126 @@ A TUI music player for Commodore 64 SID tunes
 
 ---
 
+# Minesweeper 4D
+
+![image:center](minesweeper-4d.png)
+
+---
+
+# A terminal renaissance?
+
+<!-- This rat library keeps popping up everywhere! -->
+
+<!-- background: waves -->
+
+---
+
+# Why?
+
+![image:left](rat-ski.png)
+
+1. Performance
+2. Safety
+3. Ergonomics
+4. Ecosystem\*
+5. Portability\*
+
+> Rust makes this possible!
+
+---
+
+# The secret sauce
+
+1. Immediate mode rendering
+2. Declarative UI
+3. Backend-agnostic events & rendering
+   - e.g. crossterm
+   - e.g. embedded-graphics
+
+> "Given this state and these events, the UI renders as _this_, immediately."
+
+### Events -> State -> UI -> Repeat
+
+---
+
+# Starting a Ratatui app
+
+```rust
+ratatui::run(|terminal| {
+    // main loop
+    loop {
+
+        // render the UI
+        terminal.draw(|frame| {
+            // draw widgets
+        })?;
+
+        // handle events
+    }
+});
+```
+
+---
+
+# Rendering
+
+```rust
+terminal.draw(|frame| {
+    let area = frame.area();
+
+    let block = Block::bordered()
+        .title("Rendering");
+
+    frame.render_widget(
+        block,
+        area
+    );
+})?;
+```
+
+---
+
+# Event handling
+
+```rust
+struct App {
+    counter: usize,
+}
+
+let event = backend.poll()?;
+match event {
+    Event::Key(Key::Char('q'))
+        => break,
+    Event::Key(Key::Up)
+        => app.counter += 1,
+}
+```
+
+---
+
+# Wanna learn more?
+
+1. https://ratatui.rs
+2. github.com/ratatui/templates
+
+```sh
+$ cargo install cargo-generate
+
+$ cargo generate ratatui/templates
+```
+
+3. github.com/ratatui/awesome-ratatui
+
+---
+
 # More!
 
 ![image:left](rat-demand.png)
 
-Tools.  
-Games.  
-Dashboards.
+1. Tools.
+2. Games.
+3. Dashboards.
+4. ?????????
 
 This is not even our final form.
 
@@ -163,9 +296,13 @@ This is not even our final form.
 
 ---
 
-# A terminal renaissance???????? This rat library keeps popping up everywhere!
+# suzui-rs
 
-<!-- background: waves -->
+Running Ratatui on a Suzuki Baleno.
+
+> github.com/thatdevsherry/suzui-rs
+
+Suzuki Serial Data Line (SDL) viewer in Rust.
 
 ---
 
@@ -175,24 +312,6 @@ This is not even our final form.
 
 ---
 
-# suzui-rs
-
-Suzuki Serial Data Line (SDL) viewer in Rust.
-
-> github.com/thatdevsherry/suzui-rs
-
----
-
 # From servers to toasters?
 
 <!-- background: aurora -->
-
----
-
-# example code
-
-```rust
-fn main() {
-    println!("Hello, Ratatui!");
-}
-```

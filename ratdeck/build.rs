@@ -318,6 +318,9 @@ fn parse_slide(lines: &[&str]) -> Result<SlideDef, String> {
 
     let mut first_non_empty = None;
     for (line_idx, line) in body.iter().enumerate() {
+        if line.starts_with("<!--") && line.ends_with("-->") {
+            continue; // skip comments
+        }
         if !line.trim().is_empty() {
             first_non_empty = Some((line_idx, *line));
             break;
@@ -485,7 +488,10 @@ fn target_dimensions(position: ImagePosition, png_path: &Path) -> io::Result<(u3
 fn image_positions(slides: &[SlideDef]) -> Vec<(String, ImagePosition)> {
     let mut out = Vec::new();
     for slide in slides {
-        if let SlideDef::Image { image, position, .. } = slide {
+        if let SlideDef::Image {
+            image, position, ..
+        } = slide
+        {
             out.push((image.clone(), *position));
         }
     }
