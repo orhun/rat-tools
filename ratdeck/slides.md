@@ -311,7 +311,7 @@ terminal.draw(|frame| {
 
 ---
 
-# **Backend** trait
+# Backend trait
 
 ```rust
 pub trait Backend {
@@ -407,6 +407,16 @@ A Ratatui backend that uses valence-screens to render the terminal
 # Rat in the wild
 
 ![image:center](rat-in-the-wild.png)
+
+---
+
+# Embedded?
+
+![image:left](rat-cheese.png)
+
+> Mousefood!
+
+Ratatui backend for embedded graphics
 
 ---
 
