@@ -14,7 +14,8 @@ use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use tui_markdown::from_str as markdown_to_text;
+use ratatui::style::Style;
+use tui_markdown::StyleSheet;
 
 fn main() {
     // Put `memory.x` in our output directory and ensure it's
@@ -534,7 +535,45 @@ fn const_name(stem: &str) -> String {
     out
 }
 
+#[derive(Clone, Copy)]
+struct MarkdownStyle;
+
+impl StyleSheet for MarkdownStyle {
+    fn heading(&self, level: u8) -> Style {
+        match level {
+            1 => Style::new().on_cyan().bold().underlined(),
+            2 => Style::new().cyan().bold(),
+            3 => Style::new().cyan().bold().italic(),
+            4 => Style::new().light_cyan().italic(),
+            5 => Style::new().light_cyan().italic(),
+            _ => Style::new().light_cyan().italic(),
+        }
+    }
+
+    fn code(&self) -> Style {
+        Style::new().white().on_black()
+    }
+
+    fn link(&self) -> Style {
+        Style::new().blue().underlined()
+    }
+
+    fn blockquote(&self) -> Style {
+        Style::new().green()
+    }
+
+    fn heading_meta(&self) -> Style {
+        // De-emphasize metadata so the heading text stays primary.
+        Style::new().dim()
+    }
+
+    fn metadata_block(&self) -> Style {
+        Style::new().yellow()
+    }
+}
+
 fn markdown_to_rust(markdown: &str) -> String {
-    let text = markdown_to_text(markdown);
+    let text =
+        tui_markdown::from_str_with_options(markdown, &tui_markdown::Options::new(MarkdownStyle));
     format!("Box::leak(Box::new({text:?}))")
 }

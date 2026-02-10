@@ -58,13 +58,18 @@ Building high quality and modern terminal applications is still a problem.
 
 And it's a new kind of problem.
 
-> https://www.tbench.ai
-
 ---
 
-# tbench
+# Terminal Bench
 
-![image:center](terminal-bench.png)
+Agent performance benchmarks.
+
+1. GPT-5.3-Codex (75.1%)
+2. Claude Opus 4.6 (69.9%)
+3. GPT-5.2 (64.9%)
+4. Gemini 3 Pro (64.7%)
+
+> https://www.tbench.ai
 
 ---
 
@@ -93,15 +98,14 @@ is built with Rust and Ratatui.
 
 ---
 
-# https://www.reddit.com/r/commandline/comments/1qyq204/why_do_so_many_tui_projects_seem_to_use_rust_as/
+# u/HeyCanIBorrowThat
 
-![image:center](r-commandline-2.png)
+> "I think ratatui makes it really easy to make TUI apps compared to older frameworks like ncurses.
+> Rust is also trendy right now and for good reason"
 
 ---
 
-# Ratatui
-
-![image:center](ratatui-header.png)
+# <mascot>
 
 ---
 
@@ -166,12 +170,6 @@ Find the best game deals across Steam, Epic Games & more.
 4d Minesweeper TUI
 
 > gh/itabesamesa/minesweeper_4d_rs
-
----
-
-# Minesweeper 4D
-
-![image:center](minesweeper-4d.png)
 
 ---
 
@@ -342,9 +340,9 @@ pub trait Backend {
 
 ---
 
-# Rat in paris
+# <let-him-cook>
 
-![image:center](rat-in-paris.png)
+![image:left](lethimcook.png)
 
 ---
 
@@ -378,17 +376,11 @@ Ratatui on the PlayStation Portable (PSP)!
 
 ---
 
-# ratatui-minecraft
+# tui-uefi
 
-![image:center](ratatui-minecraft.png)
+Build TUIs for UEFI firmware interfaces, like your BIOS!
 
----
-
-# ratatui-minecraft
-
-A Ratatui backend that uses valence-screens to render the terminal
-
-> gh/janTatesa/ratatui-minecraft
+> github.com/reubeno/tui-uefi
 
 ---
 
@@ -398,15 +390,30 @@ A Ratatui backend that uses valence-screens to render the terminal
 
 ---
 
-# Ratatuify
+# "ratatuify"
 
-![image:center](ratatuify.png)
+"To rebuild or redesign something using the Rust library Ratatui,
+often transforming a GUI into an interactive terminal UI that's
+more performant and way more fancy."
+
+> "No wonder why your GUI runs so slow. Hold my cheese, let me Ratatuify it."
+
+https://www.urbandictionary.com/define.php?term=ratatuify
 
 ---
 
-# Rat in the wild
+# Rat in the Wild
 
-![image:center](rat-in-the-wild.png)
+Push Ratatui to the limit!  
+Winners:
+
+1. suzui-rs
+2. ratatui-minecraft
+3. texaform
+
+e.g. control robots on a remote planet over TCP and track their progress in the terminal :o
+
+> ratatui/ratatui/discussions/1886
 
 ---
 
@@ -417,6 +424,22 @@ A Ratatui backend that uses valence-screens to render the terminal
 > Mousefood!
 
 Ratatui backend for embedded graphics
+
+---
+
+# From servers to toasters?
+
+<!-- background: aurora -->
+
+---
+
+# Rat in Paris
+
+![image:left](rat-in-paris.png)
+
+panicked at library/alloc/src/alloc.rs:439:13:
+
+cheese allocation of 113920 bytes failed
 
 ---
 
@@ -437,6 +460,6 @@ Some meaningful message (about hacking, rats, etc.?)
 
 ---
 
-# From servers to toasters?
+# YouTube
 
-<!-- background: aurora -->
+![image:center](youtube.png)

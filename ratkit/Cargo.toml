@@ -24,7 +24,7 @@ nb = "1.1.0"
 portable-atomic = { version = "*", features = ["critical-section"] }
 embedded-alloc = "0.7.0"
 
-mousefood = { git = "https://github.com/ratatui/mousefood" }
+mousefood = "0.4.0"
 ratatui = { version = "0.30", default-features = false, features = ["portable-atomic"] }
 
 # cargo build/run

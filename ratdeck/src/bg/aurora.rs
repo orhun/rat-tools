@@ -11,6 +11,14 @@ const STEP: f64 = 0.08;
 const Y_SCALE: f64 = 0.6;
 const TICK_DIV: u32 = 1;
 
+#[inline]
+fn advance_sin_cos(sin_v: &mut f64, cos_v: &mut f64, sin_delta: f64, cos_delta: f64) {
+    let next_sin = *sin_v * cos_delta + *cos_v * sin_delta;
+    let next_cos = *cos_v * cos_delta - *sin_v * sin_delta;
+    *sin_v = next_sin;
+    *cos_v = next_cos;
+}
+
 pub struct AuroraApp {
     fields: Vec<Field>,
     ring: Ring,
@@ -49,11 +57,18 @@ impl Field {
     }
 
     fn recompute(&mut self) {
-        for (idx, point) in self.points.iter_mut().enumerate() {
-            let t = idx as f64 * STEP;
-            let x = cos(t * self.freq_x + self.phase) * self.scale;
-            let y = sin(t * self.freq_y + self.phase * 1.3) * self.scale * Y_SCALE;
+        let delta_x = STEP * self.freq_x;
+        let delta_y = STEP * self.freq_y;
+        let (mut sin_x, mut cos_x) = (sin(self.phase), cos(self.phase));
+        let (mut sin_y, mut cos_y) = (sin(self.phase * 1.3), cos(self.phase * 1.3));
+        let (sin_dx, cos_dx) = (sin(delta_x), cos(delta_x));
+        let (sin_dy, cos_dy) = (sin(delta_y), cos(delta_y));
+        for point in &mut self.points {
+            let x = cos_x * self.scale;
+            let y = sin_y * self.scale * Y_SCALE;
             *point = (x, y);
+            advance_sin_cos(&mut sin_x, &mut cos_x, sin_dx, cos_dx);
+            advance_sin_cos(&mut sin_y, &mut cos_y, sin_dy, cos_dy);
         }
     }
 }
@@ -89,11 +104,13 @@ impl Ring {
     fn recompute(&mut self) {
         let radius = self.base_radius + sin(self.phase) * self.wobble;
         let step = core::f64::consts::TAU / self.points.len() as f64;
-        for (idx, point) in self.points.iter_mut().enumerate() {
-            let a = idx as f64 * step;
-            let x = cos(a) * radius;
-            let y = sin(a) * radius * Y_SCALE;
+        let (sin_step, cos_step) = (sin(step), cos(step));
+        let (mut sin_a, mut cos_a) = (0.0_f64, 1.0_f64);
+        for point in &mut self.points {
+            let x = cos_a * radius;
+            let y = sin_a * radius * Y_SCALE;
             *point = (x, y);
+            advance_sin_cos(&mut sin_a, &mut cos_a, sin_step, cos_step);
         }
     }
 }

@@ -11,6 +11,14 @@ const SHARDS: usize = 5;
 const Y_SCALE: f64 = 0.7;
 const TICK_DIV: u32 = 2;
 
+#[inline]
+fn advance_sin_cos(sin_v: &mut f64, cos_v: &mut f64, sin_delta: f64, cos_delta: f64) {
+    let next_sin = *sin_v * cos_delta + *cos_v * sin_delta;
+    let next_cos = *cos_v * cos_delta - *sin_v * sin_delta;
+    *sin_v = next_sin;
+    *cos_v = next_cos;
+}
+
 pub struct HyperApp {
     spiro: Spiro,
     lace: Lace,
@@ -51,15 +59,31 @@ impl Spiro {
 
     fn recompute(&mut self) {
         let k = self.r / self.r2;
-        for (idx, point) in self.points.iter_mut().enumerate() {
-            let t = idx as f64 / (SPIRO_POINTS - 1) as f64 * core::f64::consts::TAU;
-            let angle = t + self.phase * 0.8;
-            let x = (self.r - self.r2) * cos(angle) +
-                self.d * cos(((self.r - self.r2) / self.r2) * angle + self.phase);
-            let y = (self.r - self.r2) * sin(angle) -
-                self.d * sin(((self.r - self.r2) / self.r2) * angle + self.phase);
-            let wobble = sin(t * 8.0 + self.phase) * 0.6;
-            *point = ((x + wobble) * 0.7, (y + wobble) * 0.7 * Y_SCALE * (1.0 + 0.2 * k));
+        let steps = (self.points.len() - 1) as f64;
+        let delta = core::f64::consts::TAU / steps;
+        let angle0 = self.phase * 0.8;
+        let angle2_factor = (self.r - self.r2) / self.r2;
+        let angle2_0 = angle2_factor * angle0 + self.phase;
+        let wobble0 = self.phase;
+        let delta2 = angle2_factor * delta;
+        let delta_wobble = 8.0 * delta;
+        let (sin_d, cos_d) = (sin(delta), cos(delta));
+        let (sin_d2, cos_d2) = (sin(delta2), cos(delta2));
+        let (sin_dw, cos_dw) = (sin(delta_wobble), cos(delta_wobble));
+        let (mut sin_a, mut cos_a) = (sin(angle0), cos(angle0));
+        let (mut sin_a2, mut cos_a2) = (sin(angle2_0), cos(angle2_0));
+        let (mut sin_w, mut cos_w) = (sin(wobble0), cos(wobble0));
+        for point in &mut self.points {
+            let x = (self.r - self.r2) * cos_a + self.d * cos_a2;
+            let y = (self.r - self.r2) * sin_a - self.d * sin_a2;
+            let wobble = sin_w * 0.6;
+            *point = (
+                (x + wobble) * 0.7,
+                (y + wobble) * 0.7 * Y_SCALE * (1.0 + 0.2 * k),
+            );
+            advance_sin_cos(&mut sin_a, &mut cos_a, sin_d, cos_d);
+            advance_sin_cos(&mut sin_a2, &mut cos_a2, sin_d2, cos_d2);
+            advance_sin_cos(&mut sin_w, &mut cos_w, sin_dw, cos_dw);
         }
     }
 }
@@ -89,14 +113,27 @@ impl Lace {
     }
 
     fn recompute(&mut self) {
-        for (idx, point) in self.points.iter_mut().enumerate() {
-            let t = idx as f64 / (LACE_POINTS - 1) as f64 * core::f64::consts::TAU;
-            let a = t * 3.0 + self.phase * 1.4;
-            let b = t * 7.0 - self.phase * 0.9;
-            let r = 14.0 + sin(a) * 4.0 + cos(b) * 3.0;
-            let x = cos(t + sin(self.phase + t * 2.0) * 0.6) * r;
-            let y = sin(t + cos(self.phase + t * 1.7) * 0.6) * r * Y_SCALE;
+        let steps = (self.points.len() - 1) as f64;
+        let delta = core::f64::consts::TAU / steps;
+        let (sin_da, cos_da) = (sin(3.0 * delta), cos(3.0 * delta));
+        let (sin_db, cos_db) = (sin(7.0 * delta), cos(7.0 * delta));
+        let (sin_ds, cos_ds) = (sin(2.0 * delta), cos(2.0 * delta));
+        let (sin_dc, cos_dc) = (sin(1.7 * delta), cos(1.7 * delta));
+        let (mut sin_a, mut cos_a) = (sin(self.phase * 1.4), cos(self.phase * 1.4));
+        let (mut sin_b, mut cos_b) = (sin(-self.phase * 0.9), cos(-self.phase * 0.9));
+        let (mut sin_s, mut cos_s) = (sin(self.phase), cos(self.phase));
+        let (mut sin_c, mut cos_c) = (sin(self.phase), cos(self.phase));
+        let mut t = 0.0;
+        for point in &mut self.points {
+            let r = 14.0 + sin_a * 4.0 + cos_b * 3.0;
+            let x = cos(t + sin_s * 0.6) * r;
+            let y = sin(t + cos_c * 0.6) * r * Y_SCALE;
             *point = (x, y);
+            t += delta;
+            advance_sin_cos(&mut sin_a, &mut cos_a, sin_da, cos_da);
+            advance_sin_cos(&mut sin_b, &mut cos_b, sin_db, cos_db);
+            advance_sin_cos(&mut sin_s, &mut cos_s, sin_ds, cos_ds);
+            advance_sin_cos(&mut sin_c, &mut cos_c, sin_dc, cos_dc);
         }
     }
 }
@@ -133,13 +170,22 @@ impl Shard {
 
     fn recompute(&mut self) {
         let len = self.points.len();
-        for (idx, point) in self.points.iter_mut().enumerate() {
-            let t = idx as f64 / (len - 1) as f64;
-            let r = self.radius + sin(self.phase + t * 9.0) * 2.2;
-            let a = self.angle + (t - 0.5) * self.span + cos(self.phase + t * 6.0) * 0.3;
+        let steps = (len - 1) as f64;
+        let t_step = 1.0 / steps;
+        let (sin_dr, cos_dr) = (sin(9.0 * t_step), cos(9.0 * t_step));
+        let (sin_dc, cos_dc) = (sin(6.0 * t_step), cos(6.0 * t_step));
+        let (mut sin_r, mut cos_r) = (sin(self.phase), cos(self.phase));
+        let (mut sin_c, mut cos_c) = (sin(self.phase), cos(self.phase));
+        let mut t = 0.0;
+        for point in &mut self.points {
+            let r = self.radius + sin_r * 2.2;
+            let a = self.angle + (t - 0.5) * self.span + cos_c * 0.3;
             let x = cos(a) * r;
             let y = sin(a) * r * Y_SCALE;
             *point = (x, y);
+            t += t_step;
+            advance_sin_cos(&mut sin_r, &mut cos_r, sin_dr, cos_dr);
+            advance_sin_cos(&mut sin_c, &mut cos_c, sin_dc, cos_dc);
         }
     }
 }

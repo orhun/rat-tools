@@ -1,4 +1,4 @@
-use alloc::{format, vec};
+use alloc::{format, vec, vec::Vec};
 use embedded_graphics::{
     image::Image,
     pixelcolor::Rgb565,
@@ -12,7 +12,9 @@ use ratatui::{
     widgets::{Block, BorderType, Paragraph, Wrap},
     Frame,
 };
-use tachyonfx::{fx, Duration as FxDuration, Effect, EffectRenderer};
+use tachyonfx::{
+    fx, pattern::RadialPattern, Duration as FxDuration, Effect, EffectRenderer, Interpolation,
+};
 use tui_big_text::{BigText, PixelSize};
 
 use crate::{
@@ -27,6 +29,7 @@ pub struct App {
     hyper_app: hyper::HyperApp,
     current_slide: usize,
     effect: Effect,
+    bg_effect: Effect,
 }
 
 impl App {
@@ -38,13 +41,24 @@ impl App {
             hyper_app: hyper::HyperApp::new(),
             current_slide: SLIDES.len() - 1, // TODO: Start from the first slide
             effect: Self::get_effect(),
+            bg_effect: Self::get_bg_effect(),
         }
     }
 
     // TODO: Pick random effects
     // <https://junkdog.github.io/tachyonfx-ftl>
     fn get_effect() -> Effect {
-        fx::explode(10.0, 3.0, 1000)
+        fx::explode(8.0, 2.0, 250)
+    }
+
+    fn get_bg_effect() -> Effect {
+        let fg_shift = [-330.0, 20.0, 20.0];
+        let timer = (1000, Interpolation::SineIn);
+
+        let radial_hsl_xform = fx::hsl_shift_fg(fg_shift, timer)
+            .with_pattern(RadialPattern::with_transition((0.5, 0.5), 13.0));
+
+        fx::repeating(fx::ping_pong(radial_hsl_xform))
     }
 
     pub fn handle_button_press(&mut self) {
@@ -110,7 +124,7 @@ impl App {
         };
 
         let display_size = display.size();
-        let point = if *position == ImagePosition::Center {
+        let point = if *position == ImagePosition::Center || title == Some("<let-him-cook>") {
             Point::new(
                 (display_size.width.saturating_sub(image_width) / 2) as i32,
                 (display_size.height.saturating_sub(image_height) / 2) as i32,
@@ -136,20 +150,22 @@ impl App {
 
         if title == Some("<intro1>") {
             self.intro_slide1(f);
-            return;
         } else if title == Some("<intro2>") {
             self.intro_slide2(f);
-            return;
-        }
-
-        match slide {
-            Slide::Title(data) => self.slide_with_title(f, data),
-            Slide::Text(data) => self.slide_with_text(f, data),
-            Slide::Image(data) => self.slide_with_image(f, data),
+        } else if title == Some("<mascot>") {
+            self.mascot_slide(f);
+        } else if title == Some("<let-him-cook>") {
+            // just let him cook
+        } else {
+            match slide {
+                Slide::Title(data) => self.slide_with_title(f, data),
+                Slide::Text(data) => self.slide_with_text(f, data),
+                Slide::Image(data) => self.slide_with_image(f, data),
+            }
         }
 
         if !self.effect.done() {
-            f.render_effect(&mut self.effect, f.area(), FxDuration::from_millis(100));
+            f.render_effect(&mut self.effect, f.area(), FxDuration::from_millis(50));
         }
     }
 
@@ -160,16 +176,18 @@ impl App {
                 self.waves_app.draw(f);
             }
             Background::Aurora => {
-                self.aurora_app.on_tick();
+                // self.aurora_app.on_tick();
                 self.aurora_app.draw(f);
+                f.render_effect(&mut self.bg_effect, f.area(), FxDuration::from_millis(50));
             }
             Background::Nebula => {
                 self.nebula_app.on_tick();
                 self.nebula_app.draw(f);
             }
             Background::Hyper => {
-                self.hyper_app.on_tick();
+                // self.hyper_app.on_tick();
                 self.hyper_app.draw(f);
+                f.render_effect(&mut self.bg_effect, f.area(), FxDuration::from_millis(50));
             }
         }
 
@@ -303,5 +321,32 @@ impl App {
                 height: 2,
             },
         );
+    }
+
+    fn mascot_slide(&self, f: &mut Frame) {
+        let mascot_str = [
+            "",
+            "                ▄▄███              ",
+            "              ▄███████             ",
+            "            ▄█████████             ",
+            "           ████████████            ",
+            "           ▀███████████▀   ▄▄██████",
+            "                 ▀███▀▄█▀▀████████ ",
+            "               ▄▄▄▄▀▄████████████  ",
+            "              ████████████████     ",
+            "              ▀███▀██████████      ",
+            "            ▄▀▀▄   █████████       ",
+            "          ▄▀ ▄  ▀▄▀█████████       ",
+            "        ▄▀  ▀▀    ▀▄▀███████       ",
+            "      ▄▀      ▄▄    ▀▄▀█████████   ",
+            "    ▄▀         ▀▀     ▀▄▀██▀  ███  ",
+            "   █                    ▀▄▀  ▄██   ",
+            "    ▀▄                    ▀▄▀█     ",
+        ];
+        let mascot = mascot_str
+            .iter()
+            .map(|line| Line::styled(*line, Style::new().white()))
+            .collect::<Vec<Line>>();
+        f.render_widget(Paragraph::new(mascot), f.area());
     }
 }

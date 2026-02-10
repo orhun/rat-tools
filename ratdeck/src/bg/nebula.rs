@@ -10,6 +10,14 @@ const ARM_SPAN: f64 = 18.0;
 const Y_SCALE: f64 = 0.2;
 const TICK_DIV: u32 = 1;
 
+#[inline]
+fn advance_sin_cos(sin_v: &mut f64, cos_v: &mut f64, sin_delta: f64, cos_delta: f64) {
+    let next_sin = *sin_v * cos_delta + *cos_v * sin_delta;
+    let next_cos = *cos_v * cos_delta - *sin_v * sin_delta;
+    *sin_v = next_sin;
+    *cos_v = next_cos;
+}
+
 pub struct NebulaApp {
     arms: Vec<Arm>,
     bounds: f64,
@@ -45,14 +53,25 @@ impl Arm {
     }
 
     fn recompute(&mut self) {
-        for (idx, point) in self.points.iter_mut().enumerate() {
-            let t = idx as f64 / (ARM_POINTS - 1) as f64;
-            let angle = self.phase + t * self.twist;
-            let radius = self.radius + t * ARM_SPAN;
-            let wobble = sin(self.phase * 0.7 + t * 8.0) * 0.8;
-            let x = cos(angle) * (radius + wobble);
-            let y = sin(angle) * (radius + wobble) * Y_SCALE;
+        let steps = (self.points.len() - 1) as f64;
+        let t_step = 1.0 / steps;
+        let angle_step = self.twist * t_step;
+        let wobble_step = 8.0 * t_step;
+        let (sin_da, cos_da) = (sin(angle_step), cos(angle_step));
+        let (sin_dw, cos_dw) = (sin(wobble_step), cos(wobble_step));
+        let (mut sin_a, mut cos_a) = (sin(self.phase), cos(self.phase));
+        let (mut sin_w, mut cos_w) = (sin(self.phase * 0.7), cos(self.phase * 0.7));
+        let mut radius = self.radius;
+        let radius_step = ARM_SPAN * t_step;
+        for point in &mut self.points {
+            let wobble = sin_w * 0.8;
+            let r = radius + wobble;
+            let x = cos_a * r;
+            let y = sin_a * r * Y_SCALE;
             *point = (x, y);
+            radius += radius_step;
+            advance_sin_cos(&mut sin_a, &mut cos_a, sin_da, cos_da);
+            advance_sin_cos(&mut sin_w, &mut cos_w, sin_dw, cos_dw);
         }
     }
 }
@@ -60,8 +79,8 @@ impl Arm {
 impl NebulaApp {
     pub fn new() -> Self {
         let arms = vec![
-            Arm::new(0.0, 0.3, 8.0, 2.0, Color::LightBlue),
-            Arm::new(2.1, 0.3, 7.6, 2.5, Color::Magenta),
+            Arm::new(0.0, 0.3, 8.0, 2.0, Color::Cyan),
+            Arm::new(2.1, 0.3, 7.6, 2.5, Color::Green),
         ];
         let bounds = 22.0;
 
