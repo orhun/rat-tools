@@ -24,6 +24,16 @@ ssd1306.workspace = true
 nb.workspace = true
 portable-atomic.workspace = true
 embedded-alloc.workspace = true
+embedded-graphics-simulator = { workspace = true, optional = true }
 
 mousefood = { workspace = true, features = ["framebuffer"] }
 ratatui.workspace = true
+tui-big-text.workspace = true
+
+[features]
+simulator = ["embedded-graphics-simulator"]
+
+[[bin]]
+name = "simulator"
+path = "src/bin/simulator.rs"
+required-features = ["simulator"]

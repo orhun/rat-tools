@@ -57,10 +57,12 @@ UF2 flashing is the default method, but you can also use SWD with a probe if you
 
 ## Simulator
 
-Only supported for [ratdeck](#ratdeck) at the moment, but you can run the simulator on your desktop for faster iteration:
+Only supported for [ratdeck](#ratdeck) and [cheese-locator](#cheese-locator) at the moment, but you can run the simulator on your desktop for faster iteration:
 
 ```sh
-cargo run -p ratdeck --features simulator --bin simulator
+$ cargo run -p ratdeck --features simulator --bin simulator
+
+$ cargo run -p cheese-locator --features simulator --bin simulator
 ```
 
 # Credits
