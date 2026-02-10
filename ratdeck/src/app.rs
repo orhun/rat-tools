@@ -39,7 +39,7 @@ impl App {
             aurora_app: aurora::AuroraApp::new(),
             nebula_app: nebula::NebulaApp::new(),
             hyper_app: hyper::HyperApp::new(),
-            current_slide: SLIDES.len() - 1, // TODO: Start from the first slide
+            current_slide: 0,
             effect: Self::get_effect(),
             bg_effect: Self::get_bg_effect(),
         }
