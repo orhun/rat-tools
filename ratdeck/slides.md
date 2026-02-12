@@ -56,7 +56,7 @@ They are **timeless**, and still relevant.
 
 Building high quality and modern terminal applications is still a problem.
 
-And it's a new kind of problem.
+> And it's a new kind of problem.
 
 ---
 
@@ -681,6 +681,7 @@ Rat in the wild
 Mousefood
 This presentation tool
 Tuitar
+Mention ESP too
 What's next? -> Rust powers the world
 Some meaningful message (about hacking, rats, etc.?)
 

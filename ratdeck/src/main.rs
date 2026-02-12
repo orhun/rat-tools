@@ -116,7 +116,8 @@ fn main() -> ! {
         sio.gpio_bank0,
         &mut pac.RESETS,
     );
-    let mut button = pins.gpio2.into_pull_up_input();
+    let mut button_next = pins.gpio2.into_pull_up_input();
+    let mut button_prev = pins.gpio3.into_pull_up_input();
 
     usb_log(&mut serial, "before spi");
 
@@ -181,8 +182,11 @@ fn main() -> ! {
 
         app.render_image(terminal.backend_mut().display_mut());
 
-        if button.is_low().unwrap_or(false) {
-            app.handle_button_press();
+        if button_next.is_low().unwrap_or(false) {
+            app.next_slide();
+            delay.delay_ms(50);
+        } else if button_prev.is_low().unwrap_or(false) {
+            app.prev_slide();
             delay.delay_ms(50);
         }
     }
