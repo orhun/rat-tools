@@ -16,7 +16,7 @@ An embedded slideshow/presentation tool.
 - Bundled images/assets
 - Desktop simulator binary for development
 
-![](ratdeck/assets/ratdeck.jpg)
+![](ratdeck/assets/ratdeck-2.jpg)
 
 ## [cheese-locator](https://github.com/orhun/rat-tools/tree/main/cheese-locator)
 
