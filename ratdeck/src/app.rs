@@ -97,12 +97,13 @@ impl App {
             self.effect_registry.clear_effect(DeckFx::Logo);
         }
 
+        // clear any existing bg effects, then register new ones if needed
+        self.effect_registry.clear_effect(DeckFx::Bg);
+
         if let Some(Slide::Title(TitleSlide { background, .. })) = slide {
             if [Background::Aurora, Background::Hyper].contains(background) {
                 self.effect_registry.register_bg_effect()
-            } else {
-                self.effect_registry.clear_effect(DeckFx::Bg)
-            };
+            }
         }
     }
 
