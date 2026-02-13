@@ -19,8 +19,8 @@ rustflags = [
   "-C", "no-vectorize-loops",
 ]
 
-[build]
-target = ["x86_64-unknown-linux-gnu", "thumbv6m-none-eabi"]
+# [build]
+# target = ["x86_64-unknown-linux-gnu", "thumbv6m-none-eabi"]
 
 [env]
 DEFMT_LOG = "debug"
