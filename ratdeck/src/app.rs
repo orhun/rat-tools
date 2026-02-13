@@ -38,6 +38,7 @@ pub struct App {
     tick: u32,
     effect: Effect,
     bg_effect: Effect,
+    render_transition_effect: bool,
 }
 
 impl App {
@@ -51,13 +52,14 @@ impl App {
             tick: 0,
             effect: Self::get_effect(),
             bg_effect: Self::get_bg_effect(),
+            render_transition_effect: false,
         }
     }
 
     // TODO: Pick random effects
     // <https://junkdog.github.io/tachyonfx-ftl>
     fn get_effect() -> Effect {
-        fx::explode(8.0, 2.0, 250)
+        fx::explode(8.0, 2.0, 120)
     }
 
     fn get_bg_effect() -> Effect {
@@ -79,8 +81,13 @@ impl App {
         if len == 0 {
             return;
         }
-        self.current_slide = (self.current_slide + 1) % len;
-        self.effect = Self::get_effect();
+        let prev = self.current_slide;
+        let next = (self.current_slide + 1) % len;
+        self.current_slide = next;
+        self.render_transition_effect = self.is_image_like(prev) || self.is_image_like(next);
+        if self.render_transition_effect {
+            self.effect = Self::get_effect();
+        }
     }
 
     pub fn prev_slide(&mut self) {
@@ -88,12 +95,17 @@ impl App {
         if len == 0 {
             return;
         }
-        if self.current_slide == 0 {
-            self.current_slide = len - 1;
+        let prev = self.current_slide;
+        let next = if self.current_slide == 0 {
+            len - 1
         } else {
-            self.current_slide -= 1;
+            self.current_slide - 1
+        };
+        self.current_slide = next;
+        self.render_transition_effect = self.is_image_like(prev) || self.is_image_like(next);
+        if self.render_transition_effect {
+            self.effect = Self::get_effect();
         }
-        self.effect = Self::get_effect();
     }
 
     pub fn render_image<D>(&mut self, display: &mut D)
@@ -205,8 +217,20 @@ impl App {
             }
         }
 
-        if !self.effect.done() {
-            f.render_effect(&mut self.effect, f.area(), FxDuration::from_millis(50));
+        if self.render_transition_effect && !self.effect.done() {
+            f.render_effect(&mut self.effect, f.area(), FxDuration::from_millis(20));
+        }
+    }
+
+    fn is_image_like(&self, index: usize) -> bool {
+        let Some(slide) = SLIDES.get(index) else {
+            return false;
+        };
+        match slide {
+            Slide::Image(_) => true,
+            Slide::Title(TitleSlide { title, .. }) | Slide::Text(TextSlide { title, .. }) => {
+                *title == "<intro2>" || *title == "<mascot>"
+            }
         }
     }
 

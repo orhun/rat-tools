@@ -184,10 +184,10 @@ fn main() -> ! {
 
         if button_next.is_low().unwrap_or(false) {
             app.next_slide();
-            delay.delay_ms(50);
+            delay.delay_ms(120);
         } else if button_prev.is_low().unwrap_or(false) {
             app.prev_slide();
-            delay.delay_ms(50);
+            delay.delay_ms(120);
         }
     }
 }
