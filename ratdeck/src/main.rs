@@ -172,11 +172,16 @@ fn main() -> ! {
     let mut terminal = Terminal::new(backend).unwrap();
 
     let mut app = App::new();
+    let mut last_frame = delay.get_counter();
 
     loop {
+        let now = delay.get_counter();
+        let elapsed_ms = (now - last_frame).to_millis() as u32;
+        last_frame = now;
+
         terminal
             .draw(|f| {
-                app.render(f);
+                app.render(f, elapsed_ms);
             })
             .unwrap();
 

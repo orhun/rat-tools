@@ -10,6 +10,7 @@ use ratatui::Terminal;
 use ratdeck::app::App;
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::time::Instant;
 
 fn main() -> Result<(), Error> {
     let output_settings = OutputSettingsBuilder::new().scale(3).build();
@@ -36,10 +37,15 @@ fn main() -> Result<(), Error> {
     let mut terminal = Terminal::new(backend)?;
 
     let mut app = App::new();
+    let mut last_frame = Instant::now();
 
     loop {
+        let now = Instant::now();
+        let elapsed_ms = now.duration_since(last_frame).as_millis() as u32;
+        last_frame = now;
+
         terminal.draw(|f| {
-            app.render(f);
+            app.render(f, elapsed_ms);
         })?;
 
         app.render_image(terminal.backend_mut().display_mut());

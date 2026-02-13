@@ -156,7 +156,7 @@ impl App {
         im.draw(display).unwrap();
     }
 
-    pub fn render(&mut self, f: &mut Frame) {
+    pub fn render(&mut self, f: &mut Frame, elapsed_ms: u32) {
         self.tick = self.tick.wrapping_add(1);
 
         let Some(slide) = SLIDES.get(self.current_slide) else {
@@ -219,9 +219,8 @@ impl App {
 
         // render effects, if we have them
         if self.effect_registry.has_active_effects() {
-            // todo: get actual elapsed ms
             let rect = f.area();
-            self.effect_registry.process_effects(FxDuration::from_millis(50), f.buffer_mut(), rect);
+            self.effect_registry.process_effects(FxDuration::from_millis(elapsed_ms), f.buffer_mut(), rect);
         }
     }
 
