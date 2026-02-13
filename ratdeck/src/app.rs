@@ -165,6 +165,20 @@ impl App {
             self.intro_slide2(f);
         } else if title == Some("<mascot>") {
             self.mascot_slide(f);
+        } else if title == Some("<ratdeck-title>") {
+            let background = match slide {
+                Slide::Title(TitleSlide { background, .. }) => *background,
+                _ => Background::Waves,
+            };
+            self.ratdeck_title_slide(f, background);
+        } else if title == Some("<qr-youtube>") {
+            self.qr_youtube_slide(f);
+        } else if title == Some("<qr-github>") {
+            self.qr_github_slide(f);
+        } else if title == Some("<sponsor-me>") {
+            self.sponsor_me_slide(f);
+        } else if title == Some("<questions>") {
+            self.questions_slide(f);
         } else if title == Some("<demo-table-scrollbar>") {
             self.demo_table_scrollbar(f);
         } else if title == Some("<demo-sparkline>") {
@@ -197,7 +211,27 @@ impl App {
     }
 
     fn slide_with_title(&mut self, f: &mut Frame, slide: &TitleSlide) {
-        match slide.background {
+        self.draw_background(f, slide.background);
+
+        let text = Text::from(vec![Line::styled(
+            format!("{}", slide.title),
+            Style::new().white().on_black().bold(),
+        )]);
+
+        let area = f
+            .area()
+            .centered(Constraint::Percentage(80), Constraint::Percentage(20));
+
+        f.render_widget(
+            Paragraph::new(text)
+                .wrap(Wrap { trim: false })
+                .block(Block::bordered().style(Style::new().on_black())),
+            area,
+        );
+    }
+
+    fn draw_background(&mut self, f: &mut Frame, background: Background) {
+        match background {
             Background::Waves => {
                 self.waves_app.on_tick();
                 self.waves_app.draw(f);
@@ -217,22 +251,6 @@ impl App {
                 f.render_effect(&mut self.bg_effect, f.area(), FxDuration::from_millis(50));
             }
         }
-
-        let text = Text::from(vec![Line::styled(
-            format!("{}", slide.title),
-            Style::new().white().on_black().bold(),
-        )]);
-
-        let area = f
-            .area()
-            .centered(Constraint::Percentage(80), Constraint::Percentage(20));
-
-        f.render_widget(
-            Paragraph::new(text)
-                .wrap(Wrap { trim: false })
-                .block(Block::bordered().style(Style::new().on_black())),
-            area,
-        );
     }
 
     fn slide_with_text(&mut self, f: &mut Frame, slide: &TextSlide) {
@@ -296,7 +314,6 @@ impl App {
             ]))
             .block(
                 Block::bordered()
-                    .title("┤ rat bio ├".white())
                     .border_type(BorderType::Rounded)
                     .border_style(Style::new().white())
                     .title_bottom("orhun.dev")
@@ -349,6 +366,139 @@ impl App {
             Rect {
                 x: 0,
                 y: f.area().height - 2,
+                width: f.area().width,
+                height: 2,
+            },
+        );
+    }
+
+    fn ratdeck_title_slide(&mut self, f: &mut Frame, background: Background) {
+        self.draw_background(f, background);
+
+        let title = BigText::builder()
+            .pixel_size(PixelSize::Quadrant)
+            .style(Style::new().green())
+            .lines(vec!["".into(), "".into(), " RATDECK".white().into()])
+            .build();
+
+        f.render_widget(
+            title,
+            Rect {
+                x: 0,
+                y: 0,
+                width: f.area().width,
+                height: f.area().height,
+            },
+        );
+    }
+
+    fn qr_youtube_slide(&mut self, f: &mut Frame) {
+        let text = Text::from(vec![
+            Line::from("    █▀▀▀▀▀█ █ ▄ ▀███ █▄▄  █▀▀▀▀▀█"),
+            Line::from("    █ ███ █ ▀  ▄█▀█▄ ▄▀▄█ █ ███ █"),
+            Line::from("    █ ▀▀▀ █ ▀▀▄▀ █▄▀ ▄█▀  █ ▀▀▀ █"),
+            Line::from("    ▀▀▀▀▀▀▀ ▀▄▀▄▀ █ ▀ █▄█ ▀▀▀▀▀▀▀"),
+            Line::from("    █  ▀█▀▀▀▀▀▄  ▀█▀▀▀ ▀ █ ▄█ ██▀"),
+            Line::from("    ▀▄ ▀▄█▀▀█ █▄▄ █▄ █ ▄▄▄▄▀█▄▀ ▄"),
+            Line::from("    ▀▀█ █▀▀▄█▄▄▄ ▀▀  ▄▄ █ █▄▄▄▄▄█"),
+            Line::from("    ▀   ▀ ▀ █▄▀▀█▄█▀▄▀▄▀▀▀▀██ █ █"),
+            Line::from("    ▄▀█▀█▀▀█▀▄▀ ▀  ▀ ▄▄██   ▄▀▄▄"),
+            Line::from("    ██▄ ██▀▄▀██▄██▀▄█▀▄▀ ▄▀▄ █▄ ▀"),
+            Line::from("    ▀▀▀   ▀▀█▄██▄█  ▄▀▄ █▀▀▀██▀▀"),
+            Line::from("    █▀▀▀▀▀█ █▀▄▀▄█ ▀██ ██ ▀ █▀ ▄▄"),
+            Line::from("    █ ███ █ ██   ▀▄▀█  ▀▀▀▀▀▀▀ ▄"),
+            Line::from("    █ ▀▀▀ █   ▄▀ █ ▄▀▀▄▀ █ ██▄█▀█"),
+            Line::from("    ▀▀▀▀▀▀▀ ▀        ▀▀▀▀▀▀▀ ▀"),
+        ]);
+
+        let area = f
+            .area()
+            .centered(Constraint::Percentage(95), Constraint::Percentage(90));
+        f.render_widget(
+            Paragraph::new(text)
+                .alignment(Alignment::Left)
+                .wrap(Wrap { trim: false })
+                .block(Block::default()),
+            area,
+        );
+    }
+
+    fn qr_github_slide(&mut self, f: &mut Frame) {
+        let text = Text::from(vec![
+            Line::from("    █▀▀▀▀▀█ ▀▄▀█▀ █ ▄ █▀▀▀▀▀█"),
+            Line::from("    █ ███ █ ▀▄█▄▄█ ▄  █ ███ █"),
+            Line::from("    █ ▀▀▀ █ ▄▀ ▄█▄█ ▄ █ ▀▀▀ █"),
+            Line::from("    ▀▀▀▀▀▀▀ ▀ ▀▄▀ █▄▀ ▀▀▀▀▀▀▀"),
+            Line::from("    ▀▄▀ ▄ ▀█▄▄▄█▀▄ ██ ▄█ ▄▀▄█"),
+            Line::from("     ▀▀  ▄▀ ██▀▄  ▄███ ▄ █▀ ▀"),
+            Line::from("    ▀▀ ▀▀█▀▄▀ ▀   ▄▄▀▄██   ▄█"),
+            Line::from("    ▀▀██▀█▀ ▄▀▀▀  ▀█▀ ▀▄▄█▀ ▀"),
+            Line::from("    ▀▀  ▀▀▀▀▄ ▄▀█▄ ▀█▀▀▀█  ▀▄"),
+            Line::from("    █▀▀▀▀▀█ ▀▄▄▄█▀▀▄█ ▀ █   ▀"),
+            Line::from("    █ ███ █  ▄█ ▀ ▄█▀█▀▀█ ▄█"),
+            Line::from("    █ ▀▀▀ █ ▀█▀██▀▄▄█▀▄██▀ ▀▀"),
+            Line::from("    ▀▀▀▀▀▀▀ ▀ ▀ ▀   ▀▀▀  ▀  ▀"),
+        ]);
+
+        let area = f
+            .area()
+            .centered(Constraint::Percentage(85), Constraint::Percentage(80));
+        f.render_widget(
+            Paragraph::new(text)
+                .alignment(Alignment::Left)
+                .wrap(Wrap { trim: false })
+                .block(Block::default()),
+            area,
+        );
+    }
+
+    fn sponsor_me_slide(&mut self, f: &mut Frame) {
+        let text = BigText::builder()
+            .pixel_size(PixelSize::Quadrant)
+            .lines(vec![
+                "HIRE ME /".green().into(),
+                "SPONSOR".yellow().into(),
+                "ME".yellow().into(),
+            ])
+            .build();
+
+        let area = f
+            .area()
+            .centered(Constraint::Percentage(95), Constraint::Percentage(80));
+        f.render_widget(text, area);
+
+        f.render_widget(
+            Paragraph::new(Text::from(vec![Line::from("github.com/orhun").cyan()]))
+                .alignment(Alignment::Center),
+            Rect {
+                x: 0,
+                y: f.area().height.saturating_sub(2),
+                width: f.area().width,
+                height: 2,
+            },
+        );
+    }
+
+    fn questions_slide(&mut self, f: &mut Frame) {
+        let text = BigText::builder()
+            .pixel_size(PixelSize::Full)
+            .lines(vec![" Q&A".white().into()])
+            .build();
+
+        let area = f
+            .area()
+            .centered(Constraint::Percentage(95), Constraint::Percentage(80));
+        f.render_widget(text, area);
+
+        f.render_widget(
+            Paragraph::new(Text::from(vec![Line::from(
+                "P.S. There isn't a rat in this device.",
+            )
+            .yellow()]))
+            .alignment(Alignment::Center),
+            Rect {
+                x: 0,
+                y: f.area().height.saturating_sub(2),
                 width: f.area().width,
                 height: 2,
             },

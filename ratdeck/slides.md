@@ -151,25 +151,17 @@ A TUI music player for Commodore 64 SID tunes
 
 ---
 
-# Dealve
+# eprofiler-tui
 
-Find the best game deals across Steam, Epic Games & more.
+eBPF profiler flamegraph based TUI
 
-> github.com/kurama/dealve-tui
-
----
-
-# Dealve
-
-![image:center](dealve.png)
+> github.com/rogercoll/eprofiler-tui
 
 ---
 
-# Minesweeper 4D
+# eprofiler-tui
 
-4d Minesweeper TUI
-
-> gh/itabesamesa/minesweeper_4d_rs
+![image:center](eprofiler.png)
 
 ---
 
@@ -450,21 +442,6 @@ https://www.urbandictionary.com/define.php?term=ratatuify
 
 ---
 
-# Rat in the Wild
-
-Push Ratatui to the limit!  
-Winners:
-
-1. suzui-rs
-2. ratatui-minecraft
-3. texaform
-
-e.g. control robots on a remote planet over TCP and track their progress in the terminal :o
-
-> ratatui/ratatui/discussions/1886
-
----
-
 # Embedded?
 
 ![image:left](rat-cheese.png)
@@ -543,17 +520,21 @@ EmbeddedBackendConfig {
 
 ---
 
-# FROM SERVERS TO TOASTERS?
+# FROM SERVERS TO TOASTERS???? WHAT IS THIS PRESENTATION?
 
 <!-- background: aurora -->
 
 ---
 
-# How about this presentation?
+# <ratdeck-title>
 
-Ratatui-powered slide deck:
+<!-- background: waves -->
 
-> Ratdeck!
+---
+
+# Ratdeck
+
+> Ratatui-powered slide deck.
 
 - RP2040 + ST7789 @ 320x240
 - Build-time slide generation
@@ -561,11 +542,13 @@ Ratatui-powered slide deck:
 - Bundled images/assets
 - Desktop simulator (SDL)
 
-<!-- TODO: mention total RAM -->
+CPU: Dual-core Cortex-M0+ @ 133MHz
+
+RAM: 256KB (heap ~200KB)
 
 ---
 
-# Ratdeck flow
+# How it works
 
 1. Author slides in `slides.md`
 2. Build script compiles slides + assets
@@ -667,30 +650,48 @@ v \_\_\_\_ v
 
 ---
 
-# QR code
+# What's next?
 
-todo
+Ratatui brings a new approach to portable UI development.
+
+Terminals + embedded, same tools, same cheese.
+
+Still a lot to build.
+
+> Rust powers the world!
 
 ---
 
-# TODO
+# Everything is livestreamed!
 
-Remember backend agnostic?
-We can use any backend
-Rat in the wild
-Mousefood
-This presentation tool
-Tuitar
-Mention ESP too
-What's next? -> Rust powers the world
-Some meaningful message (about hacking, rats, etc.?)
+> https://youtube.com/@orhundev
 
-- World needs better care
-  Hire me & sponsor me
-  I'm out
+```
+    _, .---.__c--.
+   (__( )_._( )_`_>
+       `~~'  `~'
+```
 
 ---
 
 # YouTube
 
 ![image:center](youtube.png)
+
+---
+
+# <qr-youtube>
+
+---
+
+# <sponsor-me>
+
+---
+
+# <qr-github>
+
+---
+
+# <questions>
+
+---
