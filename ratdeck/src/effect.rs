@@ -47,7 +47,7 @@ impl EffectRegistry {
     }
     
     pub fn register_transition(&mut self) {
-        let fx = fx::explode(8.0, 2.0, 250);
+        let fx = fx::explode(8.0, 2.0, 120);
 
         self.effects.add_unique_effect(DeckFx::Transition, fx)
     }

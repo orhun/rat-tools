@@ -61,9 +61,10 @@ impl App {
         if len == 0 {
             return;
         }
+        let prev = self.current_slide;
         self.current_slide = (self.current_slide + 1) % len;
 
-        self.update_effects_for_slide();
+        self.update_effects_for_slide(prev);
     }
 
     pub fn prev_slide(&mut self) {
@@ -71,17 +72,22 @@ impl App {
         if len == 0 {
             return;
         }
+        let prev = self.current_slide;
         self.current_slide = if self.current_slide == 0 {
             len - 1
         } else {
             self.current_slide - 1
         };
 
-        self.update_effects_for_slide();
+        self.update_effects_for_slide(prev);
     }
 
-    fn update_effects_for_slide(&mut self) {
-        self.effect_registry.register_transition();
+    fn update_effects_for_slide(&mut self, prev: usize) {
+        if self.is_image_like(prev) || self.is_image_like(self.current_slide) {
+            self.effect_registry.register_transition();
+        } else {
+            self.effect_registry.clear_effect(DeckFx::Transition);
+        }
 
         let slide = SLIDES.get(self.current_slide);
 
@@ -103,6 +109,18 @@ impl App {
         if let Some(Slide::Title(TitleSlide { background, .. })) = slide {
             if [Background::Aurora, Background::Hyper].contains(background) {
                 self.effect_registry.register_bg_effect()
+            }
+        }
+    }
+
+    fn is_image_like(&self, index: usize) -> bool {
+        let Some(slide) = SLIDES.get(index) else {
+            return false;
+        };
+        match slide {
+            Slide::Image(_) => true,
+            Slide::Title(TitleSlide { title, .. }) | Slide::Text(TextSlide { title, .. }) => {
+                *title == "<intro2>" || *title == "<mascot>"
             }
         }
     }
