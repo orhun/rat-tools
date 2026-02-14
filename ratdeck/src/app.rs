@@ -83,30 +83,29 @@ impl App {
     }
 
     fn update_effects_for_slide(&mut self, prev: usize) {
-        if self.is_image_like(prev) || self.is_image_like(self.current_slide) {
-            self.effect_registry.register_transition();
+        let slide = &SLIDES[self.current_slide]; 
+        let title = match slide {
+            Slide::Title(TitleSlide { title, .. }) => *title,
+            Slide::Text(TextSlide { title, .. }) => *title,
+            Slide::Image(ImageSlide { title, .. }) => *title,
+        };
+
+        if self.is_image_like(prev)
+            || self.is_image_like(self.current_slide) 
+            || slide.background().is_some() 
+        {
+            if title == "<logo>" {
+                self.effect_registry.register_logo_effect();
+            } else {
+                self.effect_registry.register_transition();
+            }
         } else {
             self.effect_registry.clear_effect(DeckFx::Transition);
         }
 
-        let slide = SLIDES.get(self.current_slide);
-
-        let title = slide.map(|s| match s {
-            Slide::Title(TitleSlide { title, .. }) => *title,
-            Slide::Text(TextSlide { title, .. }) => *title,
-            Slide::Image(ImageSlide { title, .. }) => *title,
-        });
-
-        if title == Some("<logo>") {
-            self.effect_registry.register_logo_effect();
-        } else {
-            self.effect_registry.clear_effect(DeckFx::Logo);
-        }
-
         // clear any existing bg effects, then register new ones if needed
         self.effect_registry.clear_effect(DeckFx::Bg);
-
-        if let Some(Slide::Title(TitleSlide { background, .. })) = slide {
+        if let Slide::Title(TitleSlide { background, .. }) = slide {
             if [Background::Aurora, Background::Hyper].contains(background) {
                 self.effect_registry.register_bg_effect()
             }

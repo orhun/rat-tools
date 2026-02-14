@@ -1,6 +1,6 @@
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use tachyonfx::{fx, EffectManager, Interpolation, SimpleRng};
+use tachyonfx::{fx, EffectManager, Interpolation};
 use tachyonfx::pattern::{DiagonalPattern, RadialPattern};
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -8,20 +8,17 @@ pub enum DeckFx {
     #[default]
     Transition,
     Bg,
-    Logo,
 }
 
 pub struct EffectRegistry {
     /// Internal effect manager from tachyonfx
     effects: EffectManager<DeckFx>,
-    rng: SimpleRng
 }
 
 impl EffectRegistry {
     pub fn new() -> Self {
         Self {
             effects: EffectManager::default(),
-            rng: SimpleRng::default()
         }
     }
 
@@ -43,7 +40,7 @@ impl EffectRegistry {
     // effects below
 
     pub fn clear_effect(&mut self, id: DeckFx) {
-        self.effects.add_unique_effect(id, fx::consume_tick());
+        self.effects.cancel_unique_effect(id);
     }
     
     pub fn register_transition(&mut self) {
@@ -60,7 +57,7 @@ impl EffectRegistry {
 
         let fx = fx::repeating(fx::ping_pong(shimmer));
 
-        self.effects.add_unique_effect(DeckFx::Logo, fx)
+        self.effects.add_unique_effect(DeckFx::Transition, fx)
     }
 
     pub fn register_bg_effect(&mut self) {
