@@ -118,7 +118,16 @@ fn quantize_image(png_path: &Path, width: u32, height: u32, out_dir: &Path, stem
     let img = image::open(png_path)
         .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
     let resized = img.resize_exact(width, height, image::imageops::FilterType::Lanczos3);
-    let rgba = resized.to_rgba8();
+    let mut rgba = resized.to_rgba8();
+
+    // rlatten alpha onto black background
+    for pixel in rgba.pixels_mut() {
+        let a = pixel[3] as f32 / 255.0;
+        pixel[0] = (pixel[0] as f32 * a) as u8;
+        pixel[1] = (pixel[1] as f32 * a) as u8;
+        pixel[2] = (pixel[2] as f32 * a) as u8;
+        pixel[3] = 255;
+    }
 
     let pixels: Vec<u8> = rgba.as_raw().to_vec();
     let nq = color_quant::NeuQuant::new(1, 256, &pixels);
