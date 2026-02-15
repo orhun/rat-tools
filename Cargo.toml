@@ -26,16 +26,17 @@ nb = "1.1.0"
 portable-atomic = { version = "*", features = ["critical-section"] }
 embedded-alloc = "0.7.0"
 
-mousefood = { git = "https://github.com/ratatui/mousefood", default-features = false, features = ["fonts"] }
-ratatui = { version = "0.30", default-features = false, features = ["portable-atomic"] }
+mousefood = { git = "https://github.com/junkdog/mousefood.git", branch = "ratatui-embedded-str", default-features = false, features = ["fonts"] }
+ratatui = { git = "https://github.com/junkdog/ratatui.git", branch = "embedded-poc-with-layout-cache", default-features = false, features = ["portable-atomic", "layout-cache"] }
 tui-big-text = "0.8.2"
 tui-markdown = "0.3.7"
-tachyonfx = { git = "https://github.com/ratatui/tachyonfx", default-features = false }
+tachyonfx = { version = "0.24.0", default-features = false }
 
 mipidsi = "0.9.0"
 once_cell = { version = "1.21.3", default-features = false, features = ["alloc", "race", "portable-atomic"] }
 libm = "0.2.16"
 image = "0.25.9"
+color_quant = "1.1"
 
 # cargo build/run
 [profile.dev]
@@ -88,3 +89,6 @@ debug-assertions = false
 incremental = false
 lto = 'fat'
 opt-level = 3
+
+[patch.crates-io]
+ratatui-core = { git = "https://github.com/junkdog/ratatui.git", branch = "embedded-poc-with-layout-cache" }

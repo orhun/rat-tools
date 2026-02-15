@@ -18,13 +18,10 @@ use ratatui::{
     },
     Frame,
 };
-use tachyonfx::{
-    fx,
-    pattern::{DiagonalPattern, RadialPattern},
-    Duration as FxDuration, Effect, EffectRenderer, Interpolation,
-};
+use tachyonfx::Duration as FxDuration;
 use tui_big_text::{BigText, PixelSize};
 
+use crate::effect::{DeckFx, EffectRegistry};
 use crate::{
     bg::{aurora, hyper, nebula, waves},
     slides::{Background, ImagePosition, ImageSlide, Slide, TextSlide, TitleSlide, SLIDES},
@@ -38,10 +35,7 @@ pub struct App {
     hyper_app: hyper::HyperApp,
     current_slide: usize,
     tick: u32,
-    effect: Effect,
-    bg_effect: Effect,
-    render_transition_effect: bool,
-    logo_effect: Effect,
+    effect_registry: EffectRegistry,
 }
 
 impl App {
@@ -53,35 +47,8 @@ impl App {
             hyper_app: hyper::HyperApp::new(),
             current_slide: 0,
             tick: 0,
-            effect: Self::get_effect(),
-            bg_effect: Self::get_bg_effect(),
-            render_transition_effect: false,
-            logo_effect: Self::get_logo_effect(),
+            effect_registry: EffectRegistry::new(),
         }
-    }
-
-    // TODO: Pick random effects
-    // <https://junkdog.github.io/tachyonfx-ftl>
-    fn get_effect() -> Effect {
-        fx::explode(8.0, 2.0, 120)
-    }
-
-    fn get_bg_effect() -> Effect {
-        let fg_shift = [-330.0, 20.0, 20.0];
-        let timer = (1000, Interpolation::SineIn);
-
-        let radial_hsl_xform = fx::hsl_shift_fg(fg_shift, timer)
-            .with_pattern(RadialPattern::with_transition((0.5, 0.5), 13.0));
-
-        fx::repeating(fx::ping_pong(radial_hsl_xform))
-    }
-
-    fn get_logo_effect() -> Effect {
-        let shimmer = fx::hsl_shift_fg([180.0, 40.0, 0.0], (1400, Interpolation::SineInOut))
-            .with_pattern(
-                DiagonalPattern::top_left_to_bottom_right().with_transition_width(10.0),
-            );
-        fx::repeating(fx::ping_pong(shimmer))
     }
 
     pub fn handle_button_press(&mut self) {
@@ -94,12 +61,9 @@ impl App {
             return;
         }
         let prev = self.current_slide;
-        let next = (self.current_slide + 1) % len;
-        self.current_slide = next;
-        self.render_transition_effect = self.is_image_like(prev) || self.is_image_like(next);
-        if self.render_transition_effect {
-            self.effect = Self::get_effect();
-        }
+        self.current_slide = (self.current_slide + 1) % len;
+
+        self.update_effects_for_slide(prev);
     }
 
     pub fn prev_slide(&mut self) {
@@ -108,15 +72,60 @@ impl App {
             return;
         }
         let prev = self.current_slide;
-        let next = if self.current_slide == 0 {
+        self.current_slide = if self.current_slide == 0 {
             len - 1
         } else {
             self.current_slide - 1
         };
-        self.current_slide = next;
-        self.render_transition_effect = self.is_image_like(prev) || self.is_image_like(next);
-        if self.render_transition_effect {
-            self.effect = Self::get_effect();
+
+        self.update_effects_for_slide(prev);
+    }
+
+    fn update_effects_for_slide(&mut self, prev: usize) {
+        let slide = &SLIDES[self.current_slide];
+        let title = match slide {
+            Slide::Title(TitleSlide { title, .. }) => *title,
+            Slide::Text(TextSlide { title, .. }) => *title,
+            Slide::Image(ImageSlide { title, .. }) => *title,
+        };
+
+        if self.is_image_like(prev)
+            || self.is_image_like(self.current_slide)
+            || slide.background().is_some()
+        {
+            if title == "<logo>" {
+                self.effect_registry.register_logo_effect();
+            } else if title.starts_with("<demo")
+                || title == "<custom-widget>"
+                || title == "<sponsor>"
+                || title == "<let-him-cook>"
+            {
+                self.effect_registry.clear_effect(DeckFx::Transition)
+            } else {
+                self.effect_registry.register_transition();
+            }
+        } else {
+            self.effect_registry.clear_effect(DeckFx::Transition);
+        }
+
+        // clear any existing bg effects, then register new ones if needed
+        self.effect_registry.clear_effect(DeckFx::Bg);
+        if let Slide::Title(TitleSlide { background, .. }) = slide {
+            if [Background::Aurora, Background::Hyper].contains(background) {
+                self.effect_registry.register_bg_effect()
+            }
+        }
+    }
+
+    fn is_image_like(&self, index: usize) -> bool {
+        let Some(slide) = SLIDES.get(index) else {
+            return false;
+        };
+        match slide {
+            Slide::Image(_) => true,
+            Slide::Title(TitleSlide { title, .. }) | Slide::Text(TextSlide { title, .. }) => {
+                *title == "<intro2>" || *title == "<mascot>"
+            }
         }
     }
 
@@ -170,7 +179,7 @@ impl App {
         im.draw(display).unwrap();
     }
 
-    pub fn render(&mut self, f: &mut Frame) {
+    pub fn render(&mut self, f: &mut Frame, elapsed_ms: u32) {
         self.tick = self.tick.wrapping_add(1);
 
         let Some(slide) = SLIDES.get(self.current_slide) else {
@@ -231,22 +240,14 @@ impl App {
             }
         }
 
-        if title == Some("<logo>") {
-            f.render_effect(&mut self.logo_effect, f.area(), FxDuration::from_millis(33));
-        } else if self.render_transition_effect && !self.effect.done() {
-            f.render_effect(&mut self.effect, f.area(), FxDuration::from_millis(20));
-        }
-    }
-
-    fn is_image_like(&self, index: usize) -> bool {
-        let Some(slide) = SLIDES.get(index) else {
-            return false;
-        };
-        match slide {
-            Slide::Image(_) => true,
-            Slide::Title(TitleSlide { title, .. }) | Slide::Text(TextSlide { title, .. }) => {
-                *title == "<intro2>" || *title == "<mascot>"
-            }
+        // render effects, if we have them
+        if self.effect_registry.has_active_effects() {
+            let rect = f.area();
+            self.effect_registry.process_effects(
+                FxDuration::from_millis(elapsed_ms),
+                f.buffer_mut(),
+                rect,
+            );
         }
     }
 
@@ -279,7 +280,6 @@ impl App {
             Background::Aurora => {
                 // self.aurora_app.on_tick();
                 self.aurora_app.draw(f);
-                f.render_effect(&mut self.bg_effect, f.area(), FxDuration::from_millis(50));
             }
             Background::Nebula => {
                 self.nebula_app.on_tick();
@@ -288,7 +288,6 @@ impl App {
             Background::Hyper => {
                 // self.hyper_app.on_tick();
                 self.hyper_app.draw(f);
-                f.render_effect(&mut self.bg_effect, f.area(), FxDuration::from_millis(50));
             }
         }
     }
@@ -401,7 +400,7 @@ impl App {
                     " | ".white(),
                     "RustNation UK 2026".magenta(),
                 ]),
-                Line::from_iter(["https://github.com/orhun/rat-tools".white().italic()]),
+                Line::from_iter(["https://github.com/orhun/rat-tools".white().bold()]),
             ])),
             Rect {
                 x: 0,
