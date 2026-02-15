@@ -7,6 +7,16 @@ pub enum Slide {
     Image(ImageSlide),
 }
 
+impl Slide {
+    pub fn background(&self) -> Option<Background> {
+        match self {
+            Slide::Title(title) => Some(title.background),
+            Slide::Text(_) => None,
+            Slide::Image(_) => None,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct TitleSlide {
     pub title: &'static str,

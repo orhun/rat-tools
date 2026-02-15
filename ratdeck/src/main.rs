@@ -11,7 +11,7 @@ use embedded_hal::delay::DelayNs;
 use embedded_hal::digital::{InputPin, OutputPin};
 use embedded_hal::spi::MODE_0;
 use mipidsi::options::Rotation;
-use mousefood::{fonts, EmbeddedBackend, EmbeddedBackendConfig};
+use mousefood::{EmbeddedBackend, EmbeddedBackendConfig};
 use ratatui::Terminal;
 use rp2040_panic_usb_boot as _;
 
@@ -39,6 +39,8 @@ use usb_device::{
 use usbd_serial::{SerialPort, USB_CLASS_CDC};
 
 use ratdeck::app::App;
+use ratdeck::font_8x13::mono_8x13_atlas;
+use ratdeck::font_8x13B::mono_8x13_bold_atlas;
 
 #[global_allocator]
 static HEAP: Heap = Heap::empty();
@@ -163,20 +165,24 @@ fn main() -> ! {
     usb_log(&mut serial, "after display");
 
     let config = EmbeddedBackendConfig {
-        font_regular: fonts::MONO_8X13,
-        font_bold: Some(fonts::MONO_8X13_BOLD),
-        font_italic: Some(fonts::MONO_8X13_ITALIC),
+        font_regular: mono_8x13_atlas(),
+        font_bold: Some(mono_8x13_bold_atlas()),
         ..Default::default()
     };
     let backend = EmbeddedBackend::new(&mut display, config);
     let mut terminal = Terminal::new(backend).unwrap();
 
     let mut app = App::new();
+    let mut last_frame = delay.get_counter();
 
     loop {
+        let now = delay.get_counter();
+        let elapsed_ms = (now - last_frame).to_millis() as u32;
+        last_frame = now;
+
         terminal
             .draw(|f| {
-                app.render(f);
+                app.render(f, elapsed_ms);
             })
             .unwrap();
 
