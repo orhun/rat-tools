@@ -30,7 +30,7 @@ mousefood = { git = "https://github.com/junkdog/mousefood.git", branch = "ratatu
 ratatui = { git = "https://github.com/junkdog/ratatui.git", branch = "embedded-poc", default-features = false, features = ["portable-atomic"] }
 tui-big-text = "0.8.2"
 tui-markdown = "0.3.7"
-tachyonfx = { git = "https://github.com/ratatui/tachyonfx", branch = "development", default-features = false }
+tachyonfx = { version = "0.24.0", default-features = false }
 
 mipidsi = "0.9.0"
 once_cell = { version = "1.21.3", default-features = false, features = ["alloc", "race", "portable-atomic"] }
