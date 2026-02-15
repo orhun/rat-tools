@@ -42,3 +42,4 @@ required-features = ["simulator"]
 tui-markdown.workspace = true
 image.workspace = true
 ratatui.workspace = true
+color_quant.workspace = true
