@@ -5,9 +5,11 @@ use embedded_graphics_simulator::{
 use mousefood::embedded_graphics::geometry;
 use mousefood::embedded_graphics::pixelcolor::Rgb565;
 use mousefood::error::Error;
-use mousefood::{fonts, prelude::*};
+use mousefood::prelude::*;
 use ratatui::Terminal;
 use ratdeck::app::App;
+use ratdeck::font_8x13::mono_8x13_atlas;
+use ratdeck::font_8x13B::mono_8x13_bold_atlas;
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::Instant;
@@ -27,9 +29,8 @@ fn main() -> Result<(), Error> {
         flush_callback: Box::new(move |display| {
             window_handle.borrow_mut().update(display);
         }),
-        font_regular: fonts::MONO_8X13,
-        font_bold: Some(fonts::MONO_8X13_BOLD),
-        font_italic: Some(fonts::MONO_8X13_ITALIC),
+        font_regular: mono_8x13_atlas(),
+        font_bold: Some(mono_8x13_bold_atlas()),
         ..Default::default()
     };
     let backend: EmbeddedBackend<SimulatorDisplay<_>, _> =
